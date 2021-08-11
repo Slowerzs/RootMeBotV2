@@ -11,7 +11,7 @@ from classes.auteur import AuteurData, AuteurShort
 from classes.error import *
 
 from api.fetch import *
-
+from constants import database_path
 
 Solves = list[tuple[AuteurData, ChallengeData]]
 Challenges = list[ChallengeData]
@@ -19,7 +19,7 @@ Auteurs = list[AuteurData]
 
 class DatabaseManager():
 	def __init__(self):
-		self.db = SqliteDatabase("root-me.db")
+		self.db = SqliteDatabase(database_path)
 
 		db.database.initialize(self.db)
 

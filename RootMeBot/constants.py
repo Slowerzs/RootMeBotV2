@@ -13,7 +13,7 @@ auteurs_path = "auteurs/"
 
 ### DATABASE
 
-database_path = "rootme.db"
+database_path = "/opt/db/rootme.db"
 
 ### COLORS ####
 
