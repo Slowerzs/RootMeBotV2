@@ -58,12 +58,12 @@ class DatabaseManager():
 		challenges = []
 
 		for chall in new_challenges:
+			asyncio.sleep(1)	
 			try:
 				full_chall = await get_challenge_by_id(chall.idx)
 			except PremiumChallenge:
 				print(f"Could not retreive premium challenge {chall.idx}")
 				continue
-			
 			challenges.append(full_chall)
 			Challenge.create(**full_chall)
 
