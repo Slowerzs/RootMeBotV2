@@ -97,7 +97,7 @@ class RootMeBot():
 					#Premium challenge are None, we can't notify them :(
 					self.notification_manager.add_chall_to_queue(chall)
 		
-			await asyncio.sleep(5)
+			await asyncio.sleep(300)
 
 
 
@@ -118,7 +118,7 @@ class RootMeBot():
 					#Premium challenge are None, we can't notify them :(
 					self.notification_manager.add_solve_to_queue(solve)
 		
-			await asyncio.sleep(300)
+			await asyncio.sleep(5)
 
 
 	def catch(self):
@@ -192,7 +192,7 @@ class RootMeBot():
 			try:
 				idx = int(args[0])
 			except ValueError:
-				await utils.cant_find(args[0])
+				await utils.cant_find(context.message.channel, args[0])
 				return
 			aut = await self.database_manager.add_user(idx)
 			

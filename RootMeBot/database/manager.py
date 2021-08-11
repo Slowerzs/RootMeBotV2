@@ -58,7 +58,7 @@ class DatabaseManager():
 		challenges = []
 
 		for chall in new_challenges:
-			await asyncio.sleep(1)	
+			await asyncio.sleep(0.1)
 			try:
 				full_chall = await get_challenge_by_id(chall.idx)
 			except PremiumChallenge:
