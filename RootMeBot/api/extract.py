@@ -39,7 +39,12 @@ def extract_challenge(challenge_data: dict, idx) -> ChallengeData:
 	score = int(challenge_data['score'])
 	difficulty = challenge_data['difficulte']
 	date = challenge_data['date_publication']
-	validations = int(challenge_data['validations'])
+	try:
+		validations = int(challenge_data['validations'])
+	except KeyError:
+		#Challenges with 0 solves don't have a validations field
+		validations = 0
+
 	format_date = "%Y-%m-%d %H:%M:%S"
 
 	date_time = datetime.strptime(date, format_date) 
