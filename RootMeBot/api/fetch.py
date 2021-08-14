@@ -2,6 +2,7 @@ import asyncio
 import aiohttp
 import json
 import functools
+import time
 
 from api.extract import *
 
@@ -29,7 +30,10 @@ async def get_user_by_id(idx: int, session: aiohttp.ClientSession) -> AuteurData
 	if idx == 0:
 		raise UnknownUser(idx)
 
-	async with session.get(f"{api_base_url}{auteurs_path}/{idx}", cookies=cookies_rootme) as r:
+
+	params = {str(int(time.time())): str(int(time.time()))}
+
+	async with session.get(f"{api_base_url}{auteurs_path}/{idx}", params=params, cookies=cookies_rootme) as r:
 		if r.status == 404:
 			raise UnknownUser(idx)
 
@@ -46,7 +50,8 @@ async def search_user_by_name(username: str, start: int, session: aiohttp.Client
 
 	params = {
 		'nom' : username,
-		'count': str(start)
+		'count': str(start),
+		str(int(time.time())): str(int(time.time()))
 		}
 
 	async with session.get(f"{api_base_url}{auteurs_path}",params=params, cookies=cookies_rootme) as r:
@@ -67,7 +72,13 @@ async def search_user_by_name(username: str, start: int, session: aiohttp.Client
 @async_request
 async def fetch_all_challenges(session: aiohttp.ClientSession, start=0) -> ChallengeShort:
 	"""Retrieves all challenges given a starting number"""
-	async with session.get(f"{api_base_url}{challenges_path}?debut_challenges={start}", cookies=cookies_rootme) as r:
+
+	params = {
+		str(int(time.time())): str(int(time.time())),
+		'debut_challenges': str(start)
+		}
+
+	async with session.get(f"{api_base_url}{challenges_path}", params=params, cookies=cookies_rootme) as r:
 		if r.status == 200:
 			challenges_data = await r.json()
 			current_challenges = []
@@ -84,8 +95,10 @@ async def fetch_all_challenges(session: aiohttp.ClientSession, start=0) -> Chall
 @async_request
 async def get_challenge_by_id(idx: int, session: aiohttp.ClientSession) -> ChallengeData:
 	"""Retreives all information about a challenge by ID"""
+
+	params = {str(int(time.time())): str(int(time.time()))}
 	
-	async with session.get(f"{api_base_url}{challenges_path}{idx}", cookies=cookies_rootme) as r:
+	async with session.get(f"{api_base_url}{challenges_path}{idx}", params=params, cookies=cookies_rootme) as r:
 		
 		if r.status == 401:
 			raise PremiumChallenge(idx)
