@@ -10,15 +10,7 @@ This project is heavily inspired by zTeeed's version of [RootMeBot](https://gith
 You have to create a .env file in the `RootMeBot` folder to give your Root-Me API key, Discord API key, and Discord channel id the bot will use.
 You can find a .env.example for the format.
 
-Then, simply build and run the Docker image.
-
-```
-git clone https://github.com/Slowerzs/RootMeBotV2
-cd RootMeBotV2
-#Do your modifications to the .env file here
-docker build -t rootmebot .
-docker run rootmebot
-```
+Then, simply run the `run.sh` file.
 
 ## The project
 

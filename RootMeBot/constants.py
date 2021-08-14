@@ -4,10 +4,11 @@ from os import getenv
 
 API_KEY = getenv("API_KEY")
 cookies_rootme = { "api_key": f"{API_KEY}" }
+headers_rootme = { "Host": "api.www.root-me.org" }
 
 ### API PATH ###
 
-api_base_url = "https://api.www.root-me.org/"
+api_base_url = "http://212.129.28.16/"
 challenges_path = "challenges/"
 auteurs_path = "auteurs/"
 

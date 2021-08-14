@@ -17,7 +17,7 @@ Challenges = list[ChallengeShort]
 def async_request(func):
 	@functools.wraps(func)
 	async def make_request(*args, **kwargs):
-		async with aiohttp.ClientSession() as session:
+		async with aiohttp.ClientSession(headers=headers_rootme) as session:
 			return await func(*args, session, **kwargs)
 
 	return make_request
