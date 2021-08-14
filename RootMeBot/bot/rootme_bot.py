@@ -16,6 +16,8 @@ from classes.error import *
 from classes.challenge import ChallengeData
 from classes.auteur import AuteurData
 
+from constants import BOT_PREFIX
+
 import utils.messages as utils
 
 
@@ -25,7 +27,7 @@ class RootMeBot():
 
 		self.intents = discord.Intents.default()
 		self.description = """A discord bot to keep up with your progression on www.root-me.org"""
-		self.bot = commands.Bot(command_prefix="!", description=self.description, intents=self.intents)
+		self.bot = commands.Bot(command_prefix=BOT_PREFIX, description=self.description, intents=self.intents)
 		
 		self.notification_manager = notification_manager
 		self.database_manager = database_manager

@@ -1,25 +1,29 @@
 from os import getenv
 
-### API COOKIE
+### API COOKIE ###
 
 API_KEY = getenv("API_KEY")
 cookies_rootme = { "api_key": f"{API_KEY}" }
 headers_rootme = { "Host": "api.www.root-me.org" }
 
-### API PATH ###
+### API PATH ####
 
 api_base_url = "http://212.129.28.16/"
 challenges_path = "challenges/"
 auteurs_path = "auteurs/"
 
-### DATABASE
+### DATABASE ####
 
 database_path = "/opt/db/rootme.db"
 
-### COLORS ####
+### COLORS ######
 
 SUCCESS_GREEN = 0x91f723
 SCOREBOARD_WHITE = 0xffffff
 NEW_YELLOW = 0xffde26
 INFO_BLUE = 0x99c0ff
 ERROR_RED = 0xff0000
+
+### BOT CONSTANTS ###
+
+BOT_PREFIX = "!"
