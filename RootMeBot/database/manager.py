@@ -109,6 +109,7 @@ class DatabaseManager():
 
 			full_auteur = await get_user_by_id(idx)
 
+
 			if not full_auteur:
 				return []
 
@@ -123,7 +124,10 @@ class DatabaseManager():
 						#Send notification
 						new_solves.append((full_auteur, chall))
 						#Saves the new solve to the auteur
-						db_auteur.validations.add(Challenge.select().where(Challenge.idx == validation)) 
+						db_auteur.validations.add(Challenge.select().where(Challenge.idx == validation))
+						#Update score
+						db_auteur.score = full_auteur.score
+						db_auteur.save()
 			return new_solves					
 
 		except DoesNotExist:
