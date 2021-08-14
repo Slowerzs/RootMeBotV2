@@ -116,7 +116,8 @@ class DatabaseManager():
 			for validation in full_auteur.validations:
 				if validation not in old_auteur.validations:
 					try:
-						chall = await self.get_challenge_from_db(validation)
+						chall = await get_challenge_by_id(validation)
+						Challenge.update(**new_chall)
 					except DoesNotExist:
 						chall = await self.add_challenge_to_db(validation)
 						continue
