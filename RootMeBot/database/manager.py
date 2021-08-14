@@ -58,7 +58,7 @@ class DatabaseManager():
 		challenges = []
 
 		for chall in new_challenges:
-			await asyncio.sleep(0.1)
+			await asyncio.sleep(0.5)
 			try:
 				full_chall = await get_challenge_by_id(chall.idx)
 			except PremiumChallenge:
@@ -108,6 +108,9 @@ class DatabaseManager():
 			db_auteur = Auteur.select().where(Auteur.idx == idx).get()
 
 			full_auteur = await get_user_by_id(idx)
+
+			if not full_auteur:
+				return []
 
 			for validation in full_auteur.validations:
 				if validation not in old_auteur.validations:
@@ -167,6 +170,7 @@ class DatabaseManager():
 		all_new_solves = []
 
 		for aut in Auteur.select():
+			await asyncio.sleep(1)
 			print(aut)
 			new_solves = await self.update_user(aut.idx)
 			all_new_solves += new_solves
