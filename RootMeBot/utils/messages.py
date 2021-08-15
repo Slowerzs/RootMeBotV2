@@ -34,7 +34,7 @@ async def init_end(channel: TextChannel) -> None:
 
 
 
-async def send_new_solve(channel: TextChannel, chall: ChallengeData, aut: AuteurData) -> None:
+async def send_new_solve(channel: TextChannel, chall: ChallengeData, aut: AuteurData, above: tuple[str, int]) -> None:
 	"""Posts a new solve in the right channel"""
 
 	if chall.validations < 100:
@@ -53,6 +53,11 @@ async def send_new_solve(channel: TextChannel, chall: ChallengeData, aut: Auteur
 	message += f'\n • Validations: {chall.validations}'
 
 	embed = discord.Embed(color=NEW_YELLOW, title=message_title, description=message)
+	
+	if above[1]:
+		footer = f'{above[1] - aut.score} points to overtake {above[0]}'
+		embed.set_footer(text=footer)
+
 	await channel.send(embed=embed)
 
 

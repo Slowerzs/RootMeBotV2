@@ -14,7 +14,7 @@ class NotificationManager():
 		self.new_solves = []
 
 
-	def add_solve_to_queue(self, solve: Solve) -> None:
+	def add_solve_to_queue(self, solve: Solve, above: tuple[str, int]) -> None:
 		"""Adds a new solve by someone in the queue"""
 		auteur = solve[0]
 		challenge = solve[1]
@@ -22,7 +22,7 @@ class NotificationManager():
 		if not challenge:
 			return
 
-		self.new_solves.append((auteur, challenge))
+		self.new_solves.append((auteur, challenge, above))
 		print(self)
 
 	def get_solve_queue(self) -> Solves:
@@ -43,7 +43,7 @@ class NotificationManager():
 
 	def __str__(self) -> str:
 		output = f"""Challenge queue : [{', '.join([str(chall.idx) for chall in self.new_challenges])}]\n"""
-		output += f"""Solves in queue : [{', '.join([str(chall.idx) + ' by ' + aut.username for aut, chall in self.new_solves])}]"""
+		output += f"""Solves in queue : [{', '.join([str(chall.idx) + ' by ' + aut.username for aut, chall, _ in self.new_solves])}]"""
 		return output
 
 

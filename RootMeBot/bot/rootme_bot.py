@@ -2,6 +2,8 @@ import discord
 import asyncio
 import functools
 
+from peewee import DoesNotExist
+
 from database.manager import DatabaseManager
 from database.models.challenge_model import Challenge
 from database.models.auteur_model import Auteur
@@ -74,9 +76,9 @@ class RootMeBot():
 
 		while True:
 
-			for aut, chall in self.notification_manager.get_solve_queue():
+			for aut, chall, score_above in self.notification_manager.get_solve_queue():
 				if chall:
-					await utils.send_new_solve(channel, chall, aut)
+					await utils.send_new_solve(channel, chall, aut, score_above)
 					
 
 			for chall in self.notification_manager.get_chall_queue():
@@ -115,10 +117,18 @@ class RootMeBot():
 		while True:
 			
 			solves = await self.database_manager.update_users()
+
 			for solve in solves:
+				try:
+					user_above = Auteur.select().where(Auteur.score > solve[0].score).order_by(Auteur.score.asc()).get()
+					above = (user_above.username, user_above.score)
+				except DoesNotExist:
+					#First person in scoreboard
+					above = ("", 0)
+
 				if solve[1]:
 					#Premium challenge are None, we can't notify them :(
-					self.notification_manager.add_solve_to_queue(solve)
+					self.notification_manager.add_solve_to_queue(solve, above)
 		
 			await asyncio.sleep(5)
 

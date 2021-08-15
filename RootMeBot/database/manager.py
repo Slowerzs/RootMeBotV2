@@ -129,7 +129,9 @@ class DatabaseManager():
 						db_auteur.validations.add(Challenge.select().where(Challenge.idx == validation))
 						#Update score
 						db_auteur.score = full_auteur.score
+						db_auteur.rank = full_auteur.rank
 						db_auteur.save()
+
 			return new_solves					
 
 		except DoesNotExist:
