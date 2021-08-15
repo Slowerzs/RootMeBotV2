@@ -155,6 +155,13 @@ class DatabaseManager():
 
 
 	async def add_user(self, idx: int) -> AuteurData:
+
+		try:
+			get_user_from_db(idx)
+			return
+		except DoesNotExist:
+			pass
+
 		try:	
 			full_auteur = await get_user_by_id(idx)
 		except UnknownUser:
