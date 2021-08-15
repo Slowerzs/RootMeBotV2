@@ -63,6 +63,7 @@ async def search_user_by_name(username: str, start: int, session: aiohttp.Client
 			
 			current_users = extract_auteurs_short(users_data)
 			if len(current_users) == 50:
+				await asyncio.sleep(1.5)
 				return current_users + await search_user_by_name(username, start + 50)
 			else:
 				return current_users
