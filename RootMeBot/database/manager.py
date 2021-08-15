@@ -58,7 +58,7 @@ class DatabaseManager():
 		challenges = []
 
 		for chall in new_challenges:
-			await asyncio.sleep(0.5)
+			await asyncio.sleep(2)
 			try:
 				full_chall = await get_challenge_by_id(chall.idx)
 			except PremiumChallenge:
@@ -117,9 +117,10 @@ class DatabaseManager():
 				if validation not in old_auteur.validations:
 					try:
 						chall = await get_challenge_by_id(validation)
-						Challenge.update(**new_chall)
+						Challenge.update(**chall)
 					except DoesNotExist:
 						chall = await self.add_challenge_to_db(validation)
+					except PremiumChallenge:
 						continue
 					if chall:
 						#Send notification
