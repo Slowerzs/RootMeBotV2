@@ -41,7 +41,7 @@ async def get_user_by_id(idx: int, session: aiohttp.ClientSession) -> AuteurData
 			try:
 				user_data = await r.json()
 			except aiohttp.client_exceptions.ClientPayloadError:
-				asyncio.sleep(1.5)
+				await asyncio.sleep(1.5)
 				return await get_user_by_id(idx)		
 
 	
