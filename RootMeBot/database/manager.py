@@ -148,7 +148,7 @@ class DatabaseManager():
 
 		for aut in auteurs:
 			try:
-				await asyncio.sleep(1.5)
+				await asyncio.sleep(2)
 				full_auteur = await get_user_by_id(aut.idx)
 				full_auteurs.append(full_auteur)
 			except UnknownUser:
