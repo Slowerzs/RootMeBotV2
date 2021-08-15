@@ -168,7 +168,7 @@ class RootMeBot():
 				elif auteurs.count() == 0:
 					await utils.cant_find(context.message.channel, args)
 				else:
-					await self.database_manager.remove_user_from_db(auteurs[0]..idx)
+					await self.database_manager.remove_user_from_db(auteurs[0].idx)
 					await utils.removed_ok(context.message.channel, auteurs[0].username)
 	
 
