@@ -133,7 +133,7 @@ class DatabaseManager():
 			return new_solves					
 
 		except DoesNotExist:
-			self.add_user(idx)
+			await self.add_user(idx)
 			return []
 
 	async def search_user(self, username: str) -> Auteurs:
