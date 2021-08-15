@@ -38,8 +38,13 @@ async def get_user_by_id(idx: int, session: aiohttp.ClientSession) -> AuteurData
 			raise UnknownUser(idx)
 
 		elif r.status == 200:
-			user_data = await r.json()
-			
+			try:
+				user_data = await r.json()
+			except aiohttp.client_exceptions.ClientPayloadError:
+				asyncio.sleep(1.5)
+				return await get_user_by_id(idx)		
+
+	
 			aut = extract_auteur(user_data)
 			return aut 
 
