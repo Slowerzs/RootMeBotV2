@@ -117,7 +117,8 @@ class DatabaseManager():
 				if validation not in old_auteur.validations:
 					try:
 						chall = await get_challenge_by_id(validation)
-						Challenge.update(**chall)
+						if chall:
+							Challenge.update(**chall)
 					except DoesNotExist:
 						chall = await self.add_challenge_to_db(validation)
 					except PremiumChallenge:
