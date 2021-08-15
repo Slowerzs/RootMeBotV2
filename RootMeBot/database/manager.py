@@ -157,7 +157,7 @@ class DatabaseManager():
 	async def add_user(self, idx: int) -> AuteurData:
 
 		try:
-			get_user_from_db(idx)
+			self.get_user_from_db(idx)
 			return
 		except DoesNotExist:
 			pass
