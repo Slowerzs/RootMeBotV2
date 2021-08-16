@@ -91,6 +91,7 @@ class DatabaseManager():
 		"""Remove an Auteur from db"""
 		try:
 			aut = Auteur.select().where(Auteur.idx == idx).get()
+			print(f"Auteur to remove : {aut}")
 			validations = [i.idx for i in aut.validations]
 			auteur_data = AuteurData(aut.idx, aut.username, aut.score, aut.rank, validations)
 			aut.delete_instance()
@@ -136,7 +137,6 @@ class DatabaseManager():
 			return new_solves					
 
 		except DoesNotExist:
-			await self.add_user(idx)
 			return []
 
 	async def search_user(self, username: str) -> Auteurs:
