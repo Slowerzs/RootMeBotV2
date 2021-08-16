@@ -27,8 +27,9 @@ def main():
 
 
 if __name__ == "__main__":
+	rootme_api = ApiRootMe()
+	db_manager = DatabaseManager(rootme_api)
 
-	db_manager = DatabaseManager()
 	notification_manager = NotificationManager()
 	main()    
 

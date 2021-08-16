@@ -1,5 +1,6 @@
 from peewee import *
 
+import asyncio
 import database.models.base_model as db
 
 from database.models.challenge_model import Challenge
@@ -10,7 +11,7 @@ from classes.challenge import ChallengeData, ChallengeShort
 from classes.auteur import AuteurData, AuteurShort
 from classes.error import *
 
-from api.fetch import *
+from api.fetch import ApiRootMe
 from constants import database_path
 
 Solves = list[tuple[AuteurData, ChallengeData]]
@@ -18,9 +19,11 @@ Challenges = list[ChallengeData]
 Auteurs = list[AuteurData]
 
 class DatabaseManager():
-	def __init__(self):
-		self.db = SqliteDatabase(database_path)
+	def __init__(self, rootme_api: ApiRootMe) -> None:
 
+		self.rootme_api = rootme_api
+
+		self.db = SqliteDatabase(database_path)
 		db.database.initialize(self.db)
 
 		self.db.connect()
@@ -31,7 +34,7 @@ class DatabaseManager():
 		"""Adds a Challenge to db from api"""
 
 		try:
-			challenge = await get_challenge_by_id(idx)
+			challenge = await self.rootme_api.get_challenge_by_id(idx)
 		
 		except PremiumChallenge:
 			return None
@@ -52,15 +55,15 @@ class DatabaseManager():
 		"""Retreives all challenges"""
 
 		old_challenges = [chall.idx for chall in Challenge.select()]
-		all_challenges = await fetch_all_challenges()
+		all_challenges = await self.rootme_api.fetch_all_challenges()
 		new_challenges = [new_chall for new_chall in all_challenges if new_chall.idx not in old_challenges]
 
 		challenges = []
 
 		for chall in new_challenges:
-			await asyncio.sleep(2)
+			await asyncio.sleep(0.3)
 			try:
-				full_chall = await get_challenge_by_id(chall.idx)
+				full_chall = await self.rootme_api.get_challenge_by_id(chall.idx)
 			except PremiumChallenge:
 				print(f"Could not retreive premium challenge {chall.idx}")
 				continue
@@ -108,7 +111,7 @@ class DatabaseManager():
 			old_auteur = await self.get_user_from_db(idx)
 			db_auteur = Auteur.select().where(Auteur.idx == idx).get()
 
-			full_auteur = await get_user_by_id(idx)
+			full_auteur = await self.rootme_api.get_user_by_id(idx)
 
 
 			if not full_auteur:
@@ -117,7 +120,7 @@ class DatabaseManager():
 			for validation in full_auteur.validations:
 				if validation not in old_auteur.validations:
 					try:
-						chall = await get_challenge_by_id(validation)
+						chall = await self.rootme_api.get_challenge_by_id(validation)
 						if chall:
 							Challenge.update(**chall)
 					except DoesNotExist:
@@ -142,15 +145,15 @@ class DatabaseManager():
 	async def search_user(self, username: str) -> Auteurs:
 		full_auteurs = []
 		try:
-			auteurs = await search_user_by_name(username, 0)
+			auteurs = await self.rootme_api.search_user_by_name(username, 0)
 		except UnknownUser:
 			#No user matches the username
 			return []
 
 		for aut in auteurs:
 			try:
-				await asyncio.sleep(2)
-				full_auteur = await get_user_by_id(aut.idx)
+				await asyncio.sleep(0.3)
+				full_auteur = await self.rootme_api.get_user_by_id(aut.idx)
 				full_auteurs.append(full_auteur)
 			except UnknownUser:
 				#User might be banned, he still shows up in search but we can't get his profile
@@ -167,7 +170,7 @@ class DatabaseManager():
 			pass
 
 		try:	
-			full_auteur = await get_user_by_id(idx)
+			full_auteur = await self.rootme_api.get_user_by_id(idx)
 		except UnknownUser:
 			return None		
 
@@ -187,7 +190,7 @@ class DatabaseManager():
 		all_new_solves = []
 
 		for aut in Auteur.select():
-			await asyncio.sleep(1.75)
+			await asyncio.sleep(0.3)
 			print(aut)
 			new_solves = await self.update_user(aut.idx)
 			all_new_solves += new_solves

@@ -135,7 +135,7 @@ class RootMeBot():
 					#Premium challenge are None, we can't notify them :(
 					self.notification_manager.add_solve_to_queue(solve, above)
 		
-			await asyncio.sleep(5)
+			await asyncio.sleep(0.5)
 
 
 	def catch(self):
