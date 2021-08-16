@@ -1,4 +1,5 @@
 import discord
+import aiohttp
 
 from html import unescape
 from classes.challenge import ChallengeData
@@ -7,6 +8,7 @@ from database.manager import DatabaseManager
 from discord.channel import TextChannel
 
 from constants import SUCCESS_GREEN, SCOREBOARD_WHITE, NEW_YELLOW, INFO_BLUE, ERROR_RED
+
 
 Auteurs = list[AuteurData]
 Challenges = list[ChallengeData]
@@ -219,7 +221,20 @@ async def profile(channel: TextChannel, auteur: AuteurData, stats_glob: list[int
 	embed.add_field(name=f'**\n**', value=f'**\n**', inline=True)
 	embed.add_field(name=f'Rank: {auteur.rank}', value=second_column, inline=True)
 
-	embed.set_thumbnail(url=f'https://www.root-me.org/IMG/auton{auteur.idx}.png')
+	#Check image type, default to basic image
+	
+	async with aiohttp.ClientSession() as session:
+		resp = await session.head(f'https://www.root-me.org/IMG/auton{auteur.idx}.png')
+		if resp.status == 200:
+			embed.set_thumbnail(url=f'https://www.root-me.org/IMG/auton{auteur.idx}.png')
+
+		else:
+			resp = await session.head(f'https://www.root-me.org/IMG/auton{auteur.idx}.jpg')
+			if resp.status == 200:
+				embed.set_thumbnail(url=f'https://www.root-me.org/IMG/auton{auteur.idx}.jpg')
+			else:
+				embed.set_thumbnail(url=f'https://www.root-me.org/IMG/auton0.png')
+		
 
 	await channel.send(embed=embed)
 
