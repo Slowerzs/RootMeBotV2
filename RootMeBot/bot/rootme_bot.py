@@ -78,7 +78,8 @@ class RootMeBot():
 
 			for aut, chall, score_above in self.notification_manager.get_solve_queue():
 				if chall:
-					if len(chall.solvers) <= 2:
+					db_chall = Challenge.select().where(Challenge.idx == chall.idx).get() 
+					if len(db_chall.solvers) <= 2:
 						is_blood = True
 					else:
 						is_blood = False
