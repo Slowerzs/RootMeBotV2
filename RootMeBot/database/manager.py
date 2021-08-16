@@ -187,7 +187,7 @@ class DatabaseManager():
 		all_new_solves = []
 
 		for aut in Auteur.select():
-			await asyncio.sleep(1.5)
+			await asyncio.sleep(1.75)
 			print(aut)
 			new_solves = await self.update_user(aut.idx)
 			all_new_solves += new_solves

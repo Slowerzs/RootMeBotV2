@@ -84,10 +84,10 @@ async def fetch_all_challenges(session: aiohttp.ClientSession, start=0) -> Chall
 		'debut_challenges': str(start)
 		}
 
+	current_challenges = []
 	async with session.get(f"{api_base_url}{challenges_path}", params=params, cookies=cookies_rootme) as r:
 		if r.status == 200:
 			challenges_data = await r.json()
-			current_challenges = []
 
 			current_challenges += extract_page_challenges(challenges_data)
 			
@@ -95,6 +95,8 @@ async def fetch_all_challenges(session: aiohttp.ClientSession, start=0) -> Chall
 				return current_challenges + await fetch_all_challenges(start=start + (50 - (start % 50)))
 			else:
 				return current_challenges
+	#Case we do not get a 200 OK, maybe ban ?
+	return current_challenges
 	
 
 
