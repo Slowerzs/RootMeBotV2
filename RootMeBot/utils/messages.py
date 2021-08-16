@@ -34,10 +34,10 @@ async def init_end(channel: TextChannel) -> None:
 
 
 
-async def send_new_solve(channel: TextChannel, chall: ChallengeData, aut: AuteurData, above: tuple[str, int]) -> None:
+async def send_new_solve(channel: TextChannel, chall: ChallengeData, aut: AuteurData, above: tuple[str, int], is_blood: bool) -> None:
 	"""Posts a new solve in the right channel"""
 
-	if chall.validations < 100:
+	if is_blood:
 		emoji = ':drop_of_blood:'
 	elif chall.difficulty == "Très difficile":
 		emoji = ':fire:'

@@ -78,7 +78,11 @@ class RootMeBot():
 
 			for aut, chall, score_above in self.notification_manager.get_solve_queue():
 				if chall:
-					await utils.send_new_solve(channel, chall, aut, score_above)
+					if len(chall.solvers) <= 2:
+						is_blood = True
+					else:
+						is_blood = False
+					await utils.send_new_solve(channel, chall, aut, score_above, is_blood)
 					
 
 			for chall in self.notification_manager.get_chall_queue():
