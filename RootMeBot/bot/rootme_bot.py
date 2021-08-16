@@ -106,7 +106,7 @@ class RootMeBot():
 					#Premium challenge are None, we can't notify them :(
 					self.notification_manager.add_chall_to_queue(chall)
 		
-			await asyncio.sleep(300)
+			await asyncio.sleep(30)
 
 
 

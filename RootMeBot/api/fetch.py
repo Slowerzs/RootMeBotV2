@@ -48,7 +48,7 @@ class ApiRootMe():
 				try:
 					user_data = await r.json()
 				except aiohttp.client_exceptions.ClientPayloadError:
-					await asyncio.sleep(1.5)
+					await asyncio.sleep(0.1)
 					return await self.get_user_by_id(idx)		
 	
 		
@@ -75,7 +75,7 @@ class ApiRootMe():
 				
 				current_users = extract_auteurs_short(users_data)
 				if len(current_users) == 50:
-					await asyncio.sleep(1.5)
+					await asyncio.sleep(0.2)
 					return current_users + await self.search_user_by_name(username, start + 50)
 				else:
 					return current_users
