@@ -31,7 +31,7 @@ class ApiRootMe():
 	def __init__(self):
 		self.session = aiohttp.ClientSession()
 		self.semaphore = asyncio.Semaphore(25)
-
+		self.lang = DEFAULT_LANG
 
 		
 
@@ -43,7 +43,10 @@ class ApiRootMe():
 			raise UnknownUser(idx)
 	
 	
-		params = {str(int(time.time())): str(int(time.time()))}
+		params = {
+			str(int(time.time())): str(int(time.time())),
+			}
+
 		try:
 			async with session.get(f"{api_base_url}{auteurs_path}/{idx}", params=params, cookies=cookies_rootme) as r:
 				if r.status == 404:
@@ -68,11 +71,12 @@ class ApiRootMe():
 	@async_request
 	async def search_user_by_name(self, username: str, start: int, session: aiohttp.ClientSession) -> Auteurs:
 		"""Retreives a list of all matching usernames, possibly none"""
-	
+			
 		params = {
 			'nom' : username,
 			'count': str(start),
-			str(int(time.time())): str(int(time.time()))
+			str(int(time.time())): str(int(time.time())),
+			'lang': self.lang
 			}
 		try:
 			async with session.get(f"{api_base_url}{auteurs_path}",params=params, cookies=cookies_rootme) as r:
@@ -84,13 +88,21 @@ class ApiRootMe():
 					
 					current_users = extract_auteurs_short(users_data)
 					if len(current_users) == 50:
+						if self.lang != DEFAULT_LANG:
+							#Reset LANG
+							print("Resetting lang")
+							self.lang = DEFAULT_LANG
 						return current_users + await self.search_user_by_name(username, start + 50)
 					else:
+						if self.lang != DEFAULT_LANG:
+							#Reset LANG
+							print("Resetting lang")
+							self.lang = DEFAULT_LANG
 						return current_users
+
 		except ServerDisconnectedError:
 			await asyncio.sleep(0.2)
 			return await self.search_user_by_name(username, start)
-		
 			
 	
 	@async_request
@@ -99,7 +111,8 @@ class ApiRootMe():
 	
 		params = {
 			str(int(time.time())): str(int(time.time())),
-			'debut_challenges': str(start)
+			'debut_challenges': str(start),
+			'lang': DEFAULT_LANG
 			}
 	
 		current_challenges = []
@@ -127,7 +140,10 @@ class ApiRootMe():
 	async def get_challenge_by_id(self, idx: int, session: aiohttp.ClientSession) -> ChallengeData:
 		"""Retreives all information about a challenge by ID"""
 	
-		params = {str(int(time.time())): str(int(time.time()))}
+		params = {
+			str(int(time.time())): str(int(time.time())),
+			'lang': DEFAULT_LANG
+			}
 		try:		
 			async with session.get(f"{api_base_url}{challenges_path}{idx}", params=params, cookies=cookies_rootme) as r:
 				

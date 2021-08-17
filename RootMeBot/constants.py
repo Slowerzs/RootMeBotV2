@@ -11,6 +11,10 @@ api_base_url = "https://api.www.root-me.org/"
 challenges_path = "challenges/"
 auteurs_path = "auteurs/"
 
+### API LANG ####
+
+DEFAULT_LANG = "fr"
+
 ### DATABASE ####
 
 database_path = "/opt/db/rootme.db"

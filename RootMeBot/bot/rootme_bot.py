@@ -220,6 +220,34 @@ class RootMeBot():
 			else:
 				await utils.cant_find(context.message.channel, idx)
 
+
+		@self.bot.command(description='Change the lang for the next search')
+		@commands.check(self.after_init)
+		@self.check_channel()
+		async def user_lang(context: Context) -> None:
+			"""<lang>"""
+			args = self.get_command_args(context)
+			
+			if len(args) < 1:
+				await utils.usage(context.message.channel)
+				return
+
+			lang = args[0].lower()
+
+			if lang in ["en", "fr", "es", "ru", "de"]:
+				self.database_manager.rootme_api.lang = lang
+
+				#Send OK message
+				if lang == "en":
+					lang = "gb"
+				
+				await utils.lang(context.message.channel, lang)
+				return
+			else:
+				await utils.unknown_lang(context.message.channel, lang)
+
+
+
 		@self.bot.command(description='Search user by username')
 		@commands.check(self.after_init)
 		@self.check_channel()

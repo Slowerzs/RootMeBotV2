@@ -237,7 +237,17 @@ async def usage(channel: TextChannel) -> None:
 	embed = discord.Embed(color=ERROR_RED, title=message_title, description=message)
 	await channel.send(embed=embed)
 
+async def lang(channel: TextChannel, lang: str) -> None:
+	message_title = f"Lang Changed"
+	message = f'The lang for the next search has been updated ! :flag_{lang}:'
+	embed = discord.Embed(color=SUCCESS_GREEN, title=message_title, description=message)
+	await channel.send(embed=embed)
 
+async def unknown_lang(channel: TextChannel, lang: str) -> None:
+	message_title = f"Unknown lang"
+	message = f'Can\'t find lang {lang}. Available languages are : "en", "fr", "de", "es", "ru"'
+	embed = discord.Embed(color=ERROR_RED, title=message_title, description=message)
+	await channel.send(embed=embed)
 
 
 
