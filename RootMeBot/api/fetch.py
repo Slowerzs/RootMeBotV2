@@ -48,7 +48,7 @@ class ApiRootMe():
 				try:
 					user_data = await r.json()
 				except aiohttp.client_exceptions.ClientPayloadError:
-					await asyncio.sleep(0.1)
+					await asyncio.sleep(0.05)
 					return await self.get_user_by_id(idx)		
 	
 		
@@ -91,7 +91,7 @@ class ApiRootMe():
 			}
 	
 		current_challenges = []
-		await asyncio.sleep(0.1)
+		await asyncio.sleep(0.05)
 		async with session.get(f"{api_base_url}{challenges_path}", params=params, cookies=cookies_rootme) as r:
 			if r.status == 200:
 				challenges_data = await r.json()
