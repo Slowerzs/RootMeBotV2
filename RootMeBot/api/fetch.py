@@ -27,8 +27,7 @@ def async_request(func):
 class ApiRootMe():
 
 	def __init__(self):
-		connector = aiohttp.TCPConnector(force_close=True)
-		self.session = aiohttp.ClientSession(connector=connector)
+		self.session = aiohttp.ClientSession()
 		self.semaphore = asyncio.Semaphore(25)
 
 	@async_request
