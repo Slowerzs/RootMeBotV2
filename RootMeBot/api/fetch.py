@@ -39,7 +39,7 @@ class ApiRootMe():
 	
 	
 		params = {str(int(time.time())): str(int(time.time()))}
-		await asyncio.sleep(0.05)	
+		await asyncio.sleep(0.1)
 		async with session.get(f"{api_base_url}{auteurs_path}/{idx}", params=params, cookies=cookies_rootme) as r:
 			if r.status == 404:
 				raise UnknownUser(idx)
@@ -91,7 +91,7 @@ class ApiRootMe():
 			}
 	
 		current_challenges = []
-		await asyncio.sleep(0.05)
+		await asyncio.sleep(0.1)
 		async with session.get(f"{api_base_url}{challenges_path}", params=params, cookies=cookies_rootme) as r:
 			if r.status == 200:
 				challenges_data = await r.json()
