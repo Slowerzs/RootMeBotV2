@@ -62,7 +62,7 @@ class ApiRootMe():
 
 		except ServerDisconnectedError:
 			await asyncio.sleep(0.2)
-			return await self.get_user_by_id(idx, session)
+			return await self.get_user_by_id(idx)
 	
 	
 	@async_request
@@ -89,7 +89,7 @@ class ApiRootMe():
 						return current_users
 		except ServerDisconnectedError:
 			await asyncio.sleep(0.2)
-			return await self.search_user_by_name(username, start, session)
+			return await self.search_user_by_name(username, start)
 		
 			
 	
@@ -117,7 +117,7 @@ class ApiRootMe():
 						return current_challenges
 		except ServerDisconnectedError:
 			await asyncio.sleep(0.2)
-			return await self.fetch_all_challenges(idx, session, start=start)
+			return await self.fetch_all_challenges(idx, start=start)
 		
 		return current_challenges
 		
@@ -145,7 +145,7 @@ class ApiRootMe():
 	
 		except ServerDisconnectedError:
 			await asyncio.sleep(0.2)
-			return await self.get_challenge_by_id(username, session)
+			return await self.get_challenge_by_id(username)
 	
 	@async_request
 	async def get_image_url(self, idx: int, session: aiohttp.ClientSession) -> str:
@@ -157,7 +157,7 @@ class ApiRootMe():
 		
 		except ServerDisconnectedError:
 			await asyncio.sleep(0.2)
-			return await self.get_image_url(username, start, session)
+			return await self.get_image_url(username, start)
 		
 		url = f'https://www.root-me.org/IMG/auton{idx}.jpg'
 		try:
@@ -166,7 +166,7 @@ class ApiRootMe():
 					return url
 		except ServerDisconnectedError:
 			await asyncio.sleep(0.2)
-			return await self.get_image_url(idx, session)
+			return await self.get_image_url(idx)
 		
 		return 'https://www.root-me.org/IMG/auton0.png'	
 
