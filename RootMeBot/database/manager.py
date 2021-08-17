@@ -1,8 +1,8 @@
 from peewee import *
 
 import asyncio
-import database.models.base_model as db
 
+import database.models.base_model as db
 from database.models.challenge_model import Challenge
 from database.models.auteur_model import Auteur
 from database.models.challenge_auteur_model import ChallengeAuteur
@@ -14,18 +14,21 @@ from classes.error import *
 from api.fetch import ApiRootMe
 from constants import database_path
 
+from notify.manager import NotificationManager
+
 Solves = list[tuple[AuteurData, ChallengeData]]
 Challenges = list[ChallengeData]
 Auteurs = list[AuteurData]
 
 class DatabaseManager():
-	def __init__(self, rootme_api: ApiRootMe) -> None:
+	def __init__(self, rootme_api: ApiRootMe, notification_manager: NotificationManager) -> None:
 
 		self.rootme_api = rootme_api
+		self.notification_manager = notification_manager
 
 		self.db = SqliteDatabase(database_path)
 		db.database.initialize(self.db)
-
+		
 		self.db.connect()
 		self.db.create_tables([Challenge, Auteur, ChallengeAuteur])
 
@@ -51,25 +54,26 @@ class DatabaseManager():
 		return challenge_data		
 
 		
-	async def update_challenges(self) -> Challenges:
+	async def update_challenges(self) -> None:
 		"""Retreives all challenges"""
 
 		old_challenges = [chall.idx for chall in Challenge.select()]
 		all_challenges = await self.rootme_api.fetch_all_challenges()
 		new_challenges = [new_chall for new_chall in all_challenges if new_chall.idx not in old_challenges]
 
-		challenges = []
-
-		for chall in new_challenges:
+		async def get_new_chall(idx: int):
 			try:
-				full_chall = await self.rootme_api.get_challenge_by_id(chall.idx)
+				full_chall = await self.rootme_api.get_challenge_by_id(idx)
 			except PremiumChallenge:
-				print(f"Could not retreive premium challenge {chall.idx}")
-				continue
-			challenges.append(full_chall)
+				print(f"Could not retreive premium challenge {idx}")
+				return
 			Challenge.create(**full_chall)
-
-		return challenges
+			self.notification_manager.add_chall_to_queue(full_chall)
+			
+		coros = [get_new_chall(chall.idx) for chall in new_challenges]
+		await asyncio.gather(*coros)
+	
+		return
 
 	async def get_all_users_from_db(self) -> list[AuteurData]:
 		"""Returns all users in database in the form of AuteurData"""
@@ -102,7 +106,7 @@ class DatabaseManager():
 			return None
 		
 
-	async def update_user(self, idx: int) -> Solves:
+	async def update_user(self, idx: int) -> None:
 		"""Tries to update a user to database, if it doesn't exists return nothing"""
 		new_solves = []
 		try:
@@ -112,9 +116,11 @@ class DatabaseManager():
 
 			full_auteur = await self.rootme_api.get_user_by_id(idx)
 
-
+			
 			if not full_auteur:
-				return []
+				return
+
+			print(full_auteur)
 
 			for validation in full_auteur.validations:
 				if validation not in old_auteur.validations:
@@ -136,10 +142,20 @@ class DatabaseManager():
 						db_auteur.rank = full_auteur.rank
 						db_auteur.save()
 
-			return new_solves					
+			for solve in new_solves:
+				try:
+					user_above = Auteur.select().where(Auteur.score > solve[0].score).order_by(Auteur.score.asc()).get()
+					above = (user_above.username, user_above.score)
+				except DoesNotExist:
+					#First person in scoreboard
+					above = ("", 0)
+
+				if solve[1]:
+					#Premium challenge are None, we can't notify them :(
+					self.notification_manager.add_solve_to_queue(solve, above)
 
 		except DoesNotExist:
-			return []
+			return 
 
 	async def search_user(self, username: str) -> Auteurs:
 		full_auteurs = []
@@ -183,16 +199,20 @@ class DatabaseManager():
 		return full_auteur
 
 
-	async def update_users(self) -> Solves:
+	async def update_users(self) -> None:
 
 		all_new_solves = []
+		
+		#25 at a time
 
-		for aut in Auteur.select():
-			print(aut)
-			new_solves = await self.update_user(aut.idx)
-			all_new_solves += new_solves
+		coros = [self.update_user(aut.idx) for aut in Auteur.select()]
+		await asyncio.gather(*coros)
 
-		return all_new_solves
+		#for aut in Auteur.select():
+		#	print(aut)
+		#	new_solves = await self.update_user(aut.idx)
+		#	all_new_solves += new_solves
+
 
 
 

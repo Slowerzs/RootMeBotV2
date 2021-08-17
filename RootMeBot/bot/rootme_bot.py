@@ -100,12 +100,15 @@ class RootMeBot():
 		while True:
 			
 			new_challs = await self.database_manager.update_challenges()
+
+			"""
 			for chall in new_challs:
 				if chall:
 					#Premium challenge are None, we can't notify them :(
 					self.notification_manager.add_chall_to_queue(chall)
-		
-			await asyncio.sleep(5)
+			"""
+
+			await asyncio.sleep(300)
 
 
 
@@ -122,6 +125,7 @@ class RootMeBot():
 			
 			solves = await self.database_manager.update_users()
 
+			"""
 			for solve in solves:
 				try:
 					user_above = Auteur.select().where(Auteur.score > solve[0].score).order_by(Auteur.score.asc()).get()
@@ -133,7 +137,7 @@ class RootMeBot():
 				if solve[1]:
 					#Premium challenge are None, we can't notify them :(
 					self.notification_manager.add_solve_to_queue(solve, above)
-		
+			"""
 
 
 	def catch(self):
