@@ -22,7 +22,6 @@ from constants import BOT_PREFIX
 
 import utils.messages as utils
 
-
 class RootMeBot():
 
 	def __init__(self, database_manager: DatabaseManager, notification_manager: NotificationManager, *args, **kwargs) -> None:
@@ -106,7 +105,7 @@ class RootMeBot():
 					#Premium challenge are None, we can't notify them :(
 					self.notification_manager.add_chall_to_queue(chall)
 		
-			await asyncio.sleep(30)
+			await asyncio.sleep(5)
 
 
 
@@ -135,7 +134,6 @@ class RootMeBot():
 					#Premium challenge are None, we can't notify them :(
 					self.notification_manager.add_solve_to_queue(solve, above)
 		
-			await asyncio.sleep(0.5)
 
 
 	def catch(self):
@@ -290,8 +288,9 @@ class RootMeBot():
 							solves_steganographie, solves_cracking, solves_realiste, solves_reseau, solves_forensic, solves_app_systeme]
 
 					auteur_data = AuteurData(aut.idx, aut.username, aut.score, aut.rank, validations)
+					image_profile = await self.database_manager.rootme_api.get_image_url(aut.idx)
 
-					await utils.profile(context.message.channel, auteur_data, values, solves)
+					await utils.profile(context.message.channel, auteur_data, values, solves, image_profile)
 
 				except DoesNotExist:
 					raise ValueError()
@@ -324,13 +323,15 @@ class RootMeBot():
 					solves_reseau = aut.validations.select().where(Challenge.category == 'Réseau').count()
 					solves_forensic = aut.validations.select().where(Challenge.category == 'Forensic').count()
 					solves_app_systeme = aut.validations.select().where(Challenge.category == 'App - Système').count()
+					
+					image_profile = await self.database_manager.rootme_api.get_image_url(aut.idx)
 
 					solves = [solves_web_client, solves_web_server, solves_app_script, solves_cryptanalyse, solves_programmation,
 							solves_steganographie, solves_cracking, solves_realiste, solves_reseau, solves_forensic, solves_app_systeme]
 
 
 
-					await utils.profile(context.message.channel, auteur_data, values, solves)
+					await utils.profile(context.message.channel, auteur_data, values, solves, image_profile)
 
 
 

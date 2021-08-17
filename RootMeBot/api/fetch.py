@@ -27,8 +27,8 @@ def async_request(func):
 class ApiRootMe():
 
 	def __init__(self):
-		self.session = aiohttp.ClientSession(headers=headers_rootme)
-		self.semaphore = asyncio.Semaphore(24)
+		self.session = aiohttp.ClientSession()
+		self.semaphore = asyncio.Semaphore(25)
 
 	@async_request
 	async def get_user_by_id(self, idx: int, session: aiohttp.ClientSession) -> AuteurData:
@@ -75,7 +75,6 @@ class ApiRootMe():
 				
 				current_users = extract_auteurs_short(users_data)
 				if len(current_users) == 50:
-					await asyncio.sleep(0.2)
 					return current_users + await self.search_user_by_name(username, start + 50)
 				else:
 					return current_users
@@ -92,6 +91,7 @@ class ApiRootMe():
 			}
 	
 		current_challenges = []
+		await asyncio.sleep(0.1)
 		async with session.get(f"{api_base_url}{challenges_path}", params=params, cookies=cookies_rootme) as r:
 			if r.status == 200:
 				challenges_data = await r.json()
@@ -128,7 +128,23 @@ class ApiRootMe():
 				return challenge
 	
 	
-	
-	
-	
+	@async_request
+	async def get_image_url(self, idx: int, session: aiohttp.ClientSession) -> str:
+		url = f'https://www.root-me.org/IMG/auton{idx}.png'
+		async with session.head(url) as resp:
+			if resp.status == 200:
+				return url
+		
+		url = f'https://www.root-me.org/IMG/auton{idx}.jpg'
+		async with session.head(url) as resp:
+			if resp.status == 200:
+				return url
+		
+		return 'https://www.root-me.org/IMG/auton0.png'	
+
+
+
+
+
+
 	

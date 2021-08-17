@@ -61,7 +61,6 @@ class DatabaseManager():
 		challenges = []
 
 		for chall in new_challenges:
-			await asyncio.sleep(0.3)
 			try:
 				full_chall = await self.rootme_api.get_challenge_by_id(chall.idx)
 			except PremiumChallenge:
@@ -152,7 +151,6 @@ class DatabaseManager():
 
 		for aut in auteurs:
 			try:
-				await asyncio.sleep(0.3)
 				full_auteur = await self.rootme_api.get_user_by_id(aut.idx)
 				full_auteurs.append(full_auteur)
 			except UnknownUser:
@@ -190,7 +188,6 @@ class DatabaseManager():
 		all_new_solves = []
 
 		for aut in Auteur.select():
-			await asyncio.sleep(0.3)
 			print(aut)
 			new_solves = await self.update_user(aut.idx)
 			all_new_solves += new_solves

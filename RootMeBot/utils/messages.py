@@ -184,7 +184,7 @@ async def multiple_users(channel: TextChannel, auteurs: Auteurs) -> None:
 	await channel.send(embed=embed)
 
 
-async def profile(channel: TextChannel, auteur: AuteurData, stats_glob: list[int], solves: list[int]) -> None:
+async def profile(channel: TextChannel, auteur: AuteurData, stats_glob: list[int], solves: list[int], image_url: str) -> None:
 
 	message_title = f'Profile of {auteur.username}'
 	
@@ -221,19 +221,7 @@ async def profile(channel: TextChannel, auteur: AuteurData, stats_glob: list[int
 	embed.add_field(name=f'**\n**', value=f'**\n**', inline=True)
 	embed.add_field(name=f'Rank: {auteur.rank}', value=second_column, inline=True)
 
-	#Check image type, default to basic image
-	
-	async with aiohttp.ClientSession() as session:
-		resp = await session.head(f'https://www.root-me.org/IMG/auton{auteur.idx}.png')
-		if resp.status == 200:
-			embed.set_thumbnail(url=f'https://www.root-me.org/IMG/auton{auteur.idx}.png')
-
-		else:
-			resp = await session.head(f'https://www.root-me.org/IMG/auton{auteur.idx}.jpg')
-			if resp.status == 200:
-				embed.set_thumbnail(url=f'https://www.root-me.org/IMG/auton{auteur.idx}.jpg')
-			else:
-				embed.set_thumbnail(url=f'https://www.root-me.org/IMG/auton0.png')
+	embed.set_thumbnail(url=image_url)
 		
 
 	await channel.send(embed=embed)
