@@ -4,7 +4,7 @@ import json
 import functools
 import time
 
-from aiohttp.client_exceptions import ServerDisconnectedError
+from aiohttp.client_exceptions import ServerDisconnectedError, ClientConnectorError
 
 from api.extract import *
 
@@ -63,7 +63,7 @@ class ApiRootMe():
 					aut = extract_auteur(user_data)
 					return aut 
 
-		except ServerDisconnectedError:
+		except ServerDisconnectedError, ConnectionResetError, ClientConnectorError:
 			await asyncio.sleep(0.2)
 			return await self.get_user_by_id(idx)
 	
@@ -128,7 +128,7 @@ class ApiRootMe():
 						return current_challenges + await self.fetch_all_challenges(start=start + (50 - (start % 50)))
 					else:
 						return current_challenges
-		except ServerDisconnectedError:
+		except ServerDisconnectedError, ConnectionResetError, ClientConnectorError:
 			await asyncio.sleep(0.2)
 			return await self.fetch_all_challenges(idx, start=start)
 		
