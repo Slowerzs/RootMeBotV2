@@ -18,6 +18,7 @@ DEFAULT_LANG = "fr"
 ### DATABASE ####
 
 database_path = "/opt/db/rootme.db"
+LOG_PATH = "/opt/db/log.txt"
 
 ### COLORS ######
 

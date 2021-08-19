@@ -1,6 +1,7 @@
 import discord
 import asyncio
 import functools
+import traceback
 
 from peewee import DoesNotExist
 
@@ -18,9 +19,11 @@ from classes.error import *
 from classes.challenge import ChallengeData
 from classes.auteur import AuteurData
 
-from constants import BOT_PREFIX
+from constants import BOT_PREFIX, LOG_PATH
 
 import utils.messages as utils
+
+
 
 class RootMeBot():
 
@@ -62,7 +65,6 @@ class RootMeBot():
 
 		self.init_done = True
 
-	
 	async def cron_display(self) -> None:
 		"""Checks if there are new enqueued solves or challenges, and posts them in the right channel"""
 
@@ -124,21 +126,6 @@ class RootMeBot():
 		while True:
 			
 			solves = await self.database_manager.update_users()
-
-			"""
-			for solve in solves:
-				try:
-					user_above = Auteur.select().where(Auteur.score > solve[0].score).order_by(Auteur.score.asc()).get()
-					above = (user_above.username, user_above.score)
-				except DoesNotExist:
-					#First person in scoreboard
-					above = ("", 0)
-
-				if solve[1]:
-					#Premium challenge are None, we can't notify them :(
-					self.notification_manager.add_solve_to_queue(solve, above)
-			"""
-
 
 	def catch(self):
 		@self.bot.event
@@ -419,7 +406,7 @@ class RootMeBot():
 		"""Starts the bot"""
 		
 		self.BOT_CHANNEL = BOT_CHANNEL
-
+		print("START")
 		self.catch()
 		self.bot.loop.create_task(self.init_db())
 		self.bot.loop.create_task(self.cron_check_solves())

@@ -4,7 +4,7 @@ import json
 import functools
 import time
 
-from aiohttp.client_exceptions import ServerDisconnectedError, ClientConnectorError
+from aiohttp.client_exceptions import ServerDisconnectedError, ClientConnectorError, ClientPayloadError
 
 from api.extract import *
 
@@ -20,8 +20,7 @@ Challenges = list[ChallengeShort]
 def async_request(func):
 	@functools.wraps(func)
 	async def make_request(*args, **kwargs):
-		async with args[0].semaphore:
-			return await func(*args, args[0].session, **kwargs)
+		return await func(*args, args[0].session, **kwargs)
 
 	return make_request
 	
@@ -29,8 +28,8 @@ def async_request(func):
 class ApiRootMe():
 
 	def __init__(self):
-		self.session = aiohttp.ClientSession()
-		self.semaphore = asyncio.Semaphore(25)
+		self.connector = aiohttp.TCPConnector(limit=25)
+		self.session = aiohttp.ClientSession(connector=self.connector)
 		self.lang = DEFAULT_LANG
 
 		
@@ -53,17 +52,11 @@ class ApiRootMe():
 					raise UnknownUser(idx)
 		
 				elif r.status == 200:
-					try:
-						user_data = await r.json()
-					except aiohttp.client_exceptions.ClientPayloadError:
-						await asyncio.sleep(0.05)
-						return await self.get_user_by_id(idx)		
-		
-			
+					user_data = await r.json()
 					aut = extract_auteur(user_data)
 					return aut 
 
-		except ServerDisconnectedError, ConnectionResetError, ClientConnectorError:
+		except (ServerDisconnectedError, ConnectionResetError, ClientConnectorError, ClientPayloadError):
 			await asyncio.sleep(0.2)
 			return await self.get_user_by_id(idx)
 	
@@ -100,7 +93,7 @@ class ApiRootMe():
 							self.lang = DEFAULT_LANG
 						return current_users
 
-		except ServerDisconnectedError:
+		except (ServerDisconnectedError, ConnectionResetError, ClientConnectorError, ClientPayloadError):
 			await asyncio.sleep(0.2)
 			return await self.search_user_by_name(username, start)
 			
@@ -128,7 +121,7 @@ class ApiRootMe():
 						return current_challenges + await self.fetch_all_challenges(start=start + (50 - (start % 50)))
 					else:
 						return current_challenges
-		except ServerDisconnectedError, ConnectionResetError, ClientConnectorError:
+		except (ServerDisconnectedError, ConnectionResetError, ClientConnectorError, ClientPayloadError):
 			await asyncio.sleep(0.2)
 			return await self.fetch_all_challenges(idx, start=start)
 		
@@ -159,7 +152,7 @@ class ApiRootMe():
 					print(challenge)
 					return challenge
 	
-		except ServerDisconnectedError:
+		except (ServerDisconnectedError, ConnectionResetError, ClientConnectorError, ClientPayloadError):
 			await asyncio.sleep(0.2)
 			return await self.get_challenge_by_id(username)
 	
@@ -171,7 +164,7 @@ class ApiRootMe():
 				if resp.status == 200:
 					return url
 		
-		except ServerDisconnectedError:
+		except (ServerDisconnectedError, ConnectionResetError, ClientConnectorError, ClientPayloadError):
 			await asyncio.sleep(0.2)
 			return await self.get_image_url(username, start)
 		
@@ -180,7 +173,7 @@ class ApiRootMe():
 			async with session.head(url) as resp:
 				if resp.status == 200:
 					return url
-		except ServerDisconnectedError:
+		except (ServerDisconnectedError, ConnectionResetError, ClientConnectorError, ClientPayloadError):
 			await asyncio.sleep(0.2)
 			return await self.get_image_url(idx)
 		
