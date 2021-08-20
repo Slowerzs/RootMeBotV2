@@ -20,7 +20,8 @@ Challenges = list[ChallengeShort]
 def async_request(func):
 	@functools.wraps(func)
 	async def make_request(*args, **kwargs):
-		return await func(*args, args[0].session, **kwargs)
+		async with args[0].semaphore:
+			return await func(*args, args[0].session, **kwargs)
 
 	return make_request
 	
@@ -28,6 +29,7 @@ def async_request(func):
 class ApiRootMe():
 
 	def __init__(self):
+		self.semaphore = asyncio.Semaphore(25)
 		self.connector = aiohttp.TCPConnector(limit=25)
 		self.session = aiohttp.ClientSession(connector=self.connector)
 		self.lang = DEFAULT_LANG
