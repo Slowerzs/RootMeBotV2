@@ -166,7 +166,7 @@ class ApiRootMe():
 		
 		except (ServerDisconnectedError, ConnectionResetError, ClientConnectorError, ClientPayloadError):
 			await asyncio.sleep(0.2)
-			return await self.get_image_url(username, start)
+			return await self.get_image_url(idx)
 		
 		url = f'https://www.root-me.org/IMG/auton{idx}.jpg'
 		try:
