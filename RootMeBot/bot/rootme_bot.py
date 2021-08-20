@@ -320,7 +320,7 @@ class RootMeBot():
 			auteur_data = AuteurData(aut.idx, aut.username, aut.score, aut.rank, validations)
 			image_profile = await self.database_manager.rootme_api.get_image_png(aut.idx)
 			if not image_profile:
-				image_profile = self.database_manager.rootme_api.get_image_jpg(aut.idx)
+				image_profile = await self.database_manager.rootme_api.get_image_jpg(aut.idx)
 			if not image_profile:
 				image_profile = 'https://www.root-me.org/IMG/auton0.png'
 
