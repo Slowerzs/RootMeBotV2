@@ -102,18 +102,7 @@ class RootMeBot():
 		while True:
 			
 			new_challs = await self.database_manager.update_challenges()
-
-			"""
-			for chall in new_challs:
-				if chall:
-					#Premium challenge are None, we can't notify them :(
-					self.notification_manager.add_chall_to_queue(chall)
-			"""
-
 			await asyncio.sleep(300)
-
-
-
 
 
 	async def cron_check_solves(self) -> None:
@@ -331,8 +320,9 @@ class RootMeBot():
 			auteur_data = AuteurData(aut.idx, aut.username, aut.score, aut.rank, validations)
 			image_profile = await self.database_manager.rootme_api.get_image_png(aut.idx)
 			if not image_profile:
+				image_profile = self.database_manager.rootme_api.get_image_jpg(aut.idx)
+			if not image_profile:
 				image_profile = 'https://www.root-me.org/IMG/auton0.png'
-			
 
 			await utils.profile(context.message.channel, auteur_data, values, solves, image_profile)
 

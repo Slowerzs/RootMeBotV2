@@ -155,7 +155,7 @@ class ApiRootMe():
 	
 		except (ServerDisconnectedError, ConnectionResetError, ClientConnectorError, ClientPayloadError):
 			await asyncio.sleep(0.2)
-			return await self.get_challenge_by_id(username)
+			return await self.get_challenge_by_id(idx)
 	
 	@async_request
 	async def get_image_png(self, idx: int, session: aiohttp.ClientSession) -> str:
@@ -173,9 +173,8 @@ class ApiRootMe():
 
 	@async_request
 	async def get_image_jpg(self, idx: int, session: aiohttp.ClientSession) -> str:
-		url = f'https://www.root-me.org/IMG/auton{idx}.png'
+		url = f'https://www.root-me.org/IMG/auton{idx}.jpg'
 		try:
-			url = f'https://www.root-me.org/IMG/auton{idx}.jpg'
 			async with session.head(url) as resp:
 				if resp.status == 200:
 					return url
