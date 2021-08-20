@@ -290,29 +290,6 @@ class RootMeBot():
 				auteurs = Auteur.select().where(Auteur.idx == search_id)
 				try:
 					aut = auteurs.get()
-					validations = [i.idx for i in aut.validations]
-					
-						
-					solves_web_client = aut.validations.select().where(Challenge.category == 'Web - Client').count()
-					solves_web_server = aut.validations.select().where(Challenge.category == 'Web - Serveur').count()
-					solves_app_script = aut.validations.select().where(Challenge.category == 'App - Script').count()
-					solves_cryptanalyse = aut.validations.select().where(Challenge.category == 'Cryptanalyse').count()
-					solves_programmation = aut.validations.select().where(Challenge.category == 'Programmation').count()
-					solves_steganographie = aut.validations.select().where(Challenge.category == 'Stéganographie').count()
-					solves_cracking = aut.validations.select().where(Challenge.category == 'Cracking').count()
-					solves_realiste = aut.validations.select().where(Challenge.category == 'Réaliste').count()
-					solves_reseau = aut.validations.select().where(Challenge.category == 'Réseau').count()
-					solves_forensic = aut.validations.select().where(Challenge.category == 'Forensic').count()
-					solves_app_systeme = aut.validations.select().where(Challenge.category == 'App - Système').count()
-
-					solves = [solves_web_client, solves_web_server, solves_app_script, solves_cryptanalyse, solves_programmation,
-							solves_steganographie, solves_cracking, solves_realiste, solves_reseau, solves_forensic, solves_app_systeme]
-
-					auteur_data = AuteurData(aut.idx, aut.username, aut.score, aut.rank, validations)
-					image_profile = await self.database_manager.rootme_api.get_image_url(aut.idx)
-
-					await utils.profile(context.message.channel, auteur_data, values, solves, image_profile)
-
 				except DoesNotExist:
 					raise ValueError()
 
@@ -330,29 +307,35 @@ class RootMeBot():
 					await utils.multiple_users(context.message.channel, all_auteurs)
 				else:
 					aut = auteurs.get()
-					validations = [i.idx for i in aut.validations]
-					auteur_data = AuteurData(aut.idx, aut.username, aut.score, aut.rank, validations)
+			
 
-					solves_web_client = aut.validations.select().where(Challenge.category == 'Web - Client').count()
-					solves_web_server = aut.validations.select().where(Challenge.category == 'Web - Serveur').count()
-					solves_app_script = aut.validations.select().where(Challenge.category == 'App - Script').count()
-					solves_cryptanalyse = aut.validations.select().where(Challenge.category == 'Cryptanalyse').count()
-					solves_programmation = aut.validations.select().where(Challenge.category == 'Programmation').count()
-					solves_steganographie = aut.validations.select().where(Challenge.category == 'Stéganographie').count()
-					solves_cracking = aut.validations.select().where(Challenge.category == 'Cracking').count()
-					solves_realiste = aut.validations.select().where(Challenge.category == 'Réaliste').count()
-					solves_reseau = aut.validations.select().where(Challenge.category == 'Réseau').count()
-					solves_forensic = aut.validations.select().where(Challenge.category == 'Forensic').count()
-					solves_app_systeme = aut.validations.select().where(Challenge.category == 'App - Système').count()
+			#
+			validations = [i.idx for i in aut.validations]
 					
-					image_profile = await self.database_manager.rootme_api.get_image_url(aut.idx)
+						
+			solves_web_client = aut.validations.select().where(Challenge.category == 'Web - Client').count()
+			solves_web_server = aut.validations.select().where(Challenge.category == 'Web - Serveur').count()
+			solves_app_script = aut.validations.select().where(Challenge.category == 'App - Script').count()
+			solves_cryptanalyse = aut.validations.select().where(Challenge.category == 'Cryptanalyse').count()
+			solves_programmation = aut.validations.select().where(Challenge.category == 'Programmation').count()
+			solves_steganographie = aut.validations.select().where(Challenge.category == 'Stéganographie').count()
+			solves_cracking = aut.validations.select().where(Challenge.category == 'Cracking').count()
+			solves_realiste = aut.validations.select().where(Challenge.category == 'Réaliste').count()
+			solves_reseau = aut.validations.select().where(Challenge.category == 'Réseau').count()
+			solves_forensic = aut.validations.select().where(Challenge.category == 'Forensic').count()
+			solves_app_systeme = aut.validations.select().where(Challenge.category == 'App - Système').count()
 
-					solves = [solves_web_client, solves_web_server, solves_app_script, solves_cryptanalyse, solves_programmation,
-							solves_steganographie, solves_cracking, solves_realiste, solves_reseau, solves_forensic, solves_app_systeme]
+			solves = [solves_web_client, solves_web_server, solves_app_script, solves_cryptanalyse, solves_programmation,
+					solves_steganographie, solves_cracking, solves_realiste, solves_reseau, solves_forensic, solves_app_systeme]
 
+			auteur_data = AuteurData(aut.idx, aut.username, aut.score, aut.rank, validations)
+			image_profile = await self.database_manager.rootme_api.get_image_png(aut.idx)
+			if not image_profile:
+				image_profile = 'https://www.root-me.org/IMG/auton0.png'
+			
 
+			await utils.profile(context.message.channel, auteur_data, values, solves, image_profile)
 
-					await utils.profile(context.message.channel, auteur_data, values, solves, image_profile)
 
 
 

@@ -29,9 +29,8 @@ def async_request(func):
 class ApiRootMe():
 
 	def __init__(self):
-		self.semaphore = asyncio.Semaphore(25)
-		self.connector = aiohttp.TCPConnector(limit=25)
-		self.session = aiohttp.ClientSession(connector=self.connector)
+		self.semaphore = asyncio.BoundedSemaphore(24)
+		self.session = aiohttp.ClientSession()
 		self.lang = DEFAULT_LANG
 
 		
@@ -159,31 +158,28 @@ class ApiRootMe():
 			return await self.get_challenge_by_id(username)
 	
 	@async_request
-	async def get_image_url(self, idx: int, session: aiohttp.ClientSession) -> str:
+	async def get_image_png(self, idx: int, session: aiohttp.ClientSession) -> str:
 		url = f'https://www.root-me.org/IMG/auton{idx}.png'
 		try:
 			async with session.head(url) as resp:
 				if resp.status == 200:
 					return url
+				else:
+					return None		
 		
 		except (ServerDisconnectedError, ConnectionResetError, ClientConnectorError, ClientPayloadError):
-			await asyncio.sleep(0.2)
-			return await self.get_image_url(idx)
-		
-		url = f'https://www.root-me.org/IMG/auton{idx}.jpg'
+			return None
+
+
+	@async_request
+	async def get_image_jpg(self, idx: int, session: aiohttp.ClientSession) -> str:
+		url = f'https://www.root-me.org/IMG/auton{idx}.png'
 		try:
+			url = f'https://www.root-me.org/IMG/auton{idx}.jpg'
 			async with session.head(url) as resp:
 				if resp.status == 200:
 					return url
+				else:
+					return None			
 		except (ServerDisconnectedError, ConnectionResetError, ClientConnectorError, ClientPayloadError):
-			await asyncio.sleep(0.2)
-			return await self.get_image_url(idx)
-		
-		return 'https://www.root-me.org/IMG/auton0.png'	
-
-
-
-
-
-
-	
+			return await None
