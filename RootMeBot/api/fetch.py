@@ -118,9 +118,9 @@ class ApiRootMe():
                         return current_challenges + await self.fetch_all_challenges(start=start + (50 - (start % 50)))
                     else:
                         return current_challenges
-        except (ServerDisconnectedError, ConnectionResetError, ClientConnectorError, ClientPayloadError):
+        except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
             await asyncio.sleep(0.2)
-            return await self.fetch_all_challenges(idx, start=start)
+            return await self.fetch_all_challenges(start=start)
         
         return current_challenges
         
@@ -149,7 +149,7 @@ class ApiRootMe():
                     print(challenge)
                     return challenge
     
-        except (ServerDisconnectedError, ConnectionResetError, ClientConnectorError, ClientPayloadError):
+        except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
             await asyncio.sleep(0.2)
             return await self.get_challenge_by_id(idx)
     
@@ -163,7 +163,7 @@ class ApiRootMe():
                 else:
                     return None     
         
-        except (ServerDisconnectedError, ConnectionResetError, ClientConnectorError, ClientPayloadError):
+        except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
             return None
 
 
@@ -176,5 +176,5 @@ class ApiRootMe():
                     return url
                 else:
                     return None         
-        except (ServerDisconnectedError, ConnectionResetError, ClientConnectorError, ClientPayloadError):
+        except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
             return await None
