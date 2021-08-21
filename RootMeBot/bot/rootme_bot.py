@@ -60,7 +60,7 @@ class RootMeBot():
         if Challenge.select().count() < 300:
             await utils.init_start(channel)
             
-            await self.database_manager.update_challenges()
+            await self.database_manager.update_challenges(init=True)
             
             await utils.init_end(channel)
 
@@ -213,7 +213,7 @@ class RootMeBot():
                 aut = await self.database_manager.add_user(auteurs[0].idx)
                 await utils.added_ok(context.message.channel, aut.username)
             else:
-                await utils.cant_find(context.message.channel, search)
+                await utils.cant_find(context.message.channel, username)
 
 
         @self.bot.command(description='Change the lang for the next search')

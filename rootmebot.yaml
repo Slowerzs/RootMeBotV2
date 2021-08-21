@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rootmebot-pod
+  namespace: default
+spec:
+  restartPolicy: Never
+  volumes:
+  - name: storage-rootme
+    hostPath:
+      path: /tmp
+  containers:
+  - name: rootmebot-ct
+    image: rootmebot:latest
+    imagePullPolicy: Never
+    volumeMounts:
+    - name: storage-rootme
+      mountPath: /opt/db
