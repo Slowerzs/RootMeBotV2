@@ -40,6 +40,7 @@ class RootMeBot():
         self.init_done = False
 
     async def after_init(self, func):
+        print("Check OK after_init")
         return self.init_done
 
     def check_channel(self):
@@ -64,7 +65,10 @@ class RootMeBot():
             
             await utils.init_end(channel)
 
+        print("Done")
         self.init_done = True
+        print(self.init_done)
+
 
     async def cron_display(self) -> None:
         """Checks if there are new enqueued solves or challenges, and posts them in the right channel"""
@@ -100,9 +104,11 @@ class RootMeBot():
 
         while not self.init_done:
             await asyncio.sleep(1)
+
+        print("OK challs")
         while True:
             
-            new_challs = await self.database_manager.update_challenges()
+            await self.database_manager.update_challenges()
             await asyncio.sleep(300)
 
 
@@ -112,11 +118,13 @@ class RootMeBot():
 
         while not self.init_done:
             await asyncio.sleep(1)
+        
+        print("OK solves")
 
         while True:
-            
-            solves = await self.database_manager.update_users()
-            #print(time.localtime())
+
+            await self.database_manager.update_users()
+            await asyncio.sleep(1)
 
     def catch(self):
         @self.bot.event
@@ -399,9 +407,9 @@ class RootMeBot():
         print("START")
         self.catch()
         self.bot.loop.create_task(self.init_db())
-        self.bot.loop.create_task(self.cron_check_solves())
-        self.bot.loop.create_task(self.cron_check_challs())
-        self.bot.loop.create_task(self.cron_display())
+        asyncio.ensure_future(self.cron_check_solves())
+        asyncio.ensure_future(self.cron_check_challs())
+        asyncio.ensure_future(self.cron_display())
         self.bot.run(TOKEN)
 
 
