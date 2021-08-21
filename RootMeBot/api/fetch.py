@@ -139,7 +139,7 @@ class ApiRootMe():
 			'lang': DEFAULT_LANG
 			}
 		try:		
-			async with session.get(f"{api_base_url}{challenges_path}{idx}", params=params, cookies=cookies_rootme) as r:
+			async with session.get(f"{api_base_url}{challenges_path}/{idx}", params=params, cookies=cookies_rootme) as r:
 				
 				if r.status == 401:
 					raise PremiumChallenge(idx)

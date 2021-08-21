@@ -8,8 +8,8 @@ cookies_rootme = { "api_key": f"{API_KEY}" }
 ### API PATH ####
 
 api_base_url = "https://api.www.root-me.org/"
-challenges_path = "challenges/"
-auteurs_path = "auteurs/"
+challenges_path = "challenges"
+auteurs_path = "auteurs"
 
 ### API LANG ####
 
