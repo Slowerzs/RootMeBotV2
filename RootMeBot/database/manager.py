@@ -208,14 +208,14 @@ class DatabaseManager():
 
         all_new_solves = []
         
-        #25 at a time
+        #24 at a time
 
-        #coros = [self.update_user(aut.idx) for aut in Auteur.select()]
-        #await asyncio.gather(*coros)
+        coros = [self.update_user(aut.idx) for aut in Auteur.select()]
+        await asyncio.gather(*coros)
 
-        for aut in Auteur.select():
-           print(aut)
-           await self.update_user(aut.idx)
+        #for aut in Auteur.select():
+        #   print(aut)
+        #   await self.update_user(aut.idx)
 
 
 

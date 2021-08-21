@@ -30,8 +30,8 @@ def async_request(func):
 class ApiRootMe():
 
     def __init__(self):
-        self.semaphore = asyncio.BoundedSemaphore(20)
-        self.connector = aiohttp.TCPConnector(limit=20)
+        self.semaphore = asyncio.BoundedSemaphore(24)
+        self.connector = aiohttp.TCPConnector(limit=24, ttl_dns_cache=300)
         self.session = aiohttp.ClientSession(connector=self.connector)
         self.lang = DEFAULT_LANG
         self.timeout = aiohttp.ClientTimeout(total=3)
