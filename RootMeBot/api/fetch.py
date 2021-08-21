@@ -58,7 +58,6 @@ class ApiRootMe():
                     return aut 
 
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
-            await asyncio.sleep(0.2)
             return await self.get_user_by_id(idx)
     
     
@@ -91,7 +90,6 @@ class ApiRootMe():
                         return current_users
 
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
-            await asyncio.sleep(0.2)
             return await self.search_user_by_name(username, start)
             
     
@@ -106,7 +104,6 @@ class ApiRootMe():
             }
     
         current_challenges = []
-        await asyncio.sleep(0.1)
         try:
             async with session.get(f"{api_base_url}{challenges_path}", params=params, cookies=cookies_rootme) as r:
                 if r.status == 200:
@@ -119,7 +116,6 @@ class ApiRootMe():
                     else:
                         return current_challenges
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
-            await asyncio.sleep(0.2)
             return await self.fetch_all_challenges(start=start)
         
         return current_challenges
@@ -150,7 +146,6 @@ class ApiRootMe():
                     return challenge
     
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
-            await asyncio.sleep(0.2)
             return await self.get_challenge_by_id(idx)
     
     @async_request
@@ -177,4 +172,4 @@ class ApiRootMe():
                 else:
                     return None         
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
-            return await None
+            return None
