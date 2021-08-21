@@ -215,8 +215,7 @@ class DatabaseManager():
 
         for aut in Auteur.select():
            print(aut)
-           new_solves = await self.update_user(aut.idx)
-           all_new_solves += new_solves
+           await self.update_user(aut.idx)
 
 
 
