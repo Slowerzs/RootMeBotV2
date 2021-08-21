@@ -29,7 +29,7 @@ def async_request(func):
 class ApiRootMe():
 
 	def __init__(self):
-		self.semaphore = asyncio.BoundedSemaphore(24)
+		self.semaphore = asyncio.BoundedSemaphore(20)
 		self.session = aiohttp.ClientSession()
 		self.lang = DEFAULT_LANG
 
