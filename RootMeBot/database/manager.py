@@ -70,9 +70,13 @@ class DatabaseManager():
             Challenge.create(**full_chall)
             if not init:
                 self.notification_manager.add_chall_to_queue(full_chall)
-            
-        coros = [get_new_chall(chall.idx) for chall in new_challenges]
-        await asyncio.gather(*coros)
+
+
+        for chall in new_challenges:
+            get_new_chall(chall.idxà
+
+        #coros = [get_new_chall(chall.idx) for chall in new_challenges]
+        #await asyncio.gather(*coros)
     
         return
 
@@ -206,13 +210,13 @@ class DatabaseManager():
         
         #25 at a time
 
-        coros = [self.update_user(aut.idx) for aut in Auteur.select()]
-        await asyncio.gather(*coros)
+        #coros = [self.update_user(aut.idx) for aut in Auteur.select()]
+        #await asyncio.gather(*coros)
 
-        #for aut in Auteur.select():
-        #   print(aut)
-        #   new_solves = await self.update_user(aut.idx)
-        #   all_new_solves += new_solves
+        for aut in Auteur.select():
+           print(aut)
+           new_solves = await self.update_user(aut.idx)
+           all_new_solves += new_solves
 
 
 
