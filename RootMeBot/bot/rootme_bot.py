@@ -116,9 +116,7 @@ class RootMeBot():
         while True:
             
             solves = await self.database_manager.update_users()
-            #Be nice to root-me servers :)
             print(time.localtime())
-            await asyncio.sleep(1)
 
     def catch(self):
         @self.bot.event
