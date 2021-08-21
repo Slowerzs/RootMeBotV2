@@ -59,8 +59,11 @@ class ApiRootMe():
                     return aut 
 
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
-            return None    
-    
+            return None
+        except TimeoutError:
+            return await self.get_user_by_id(idx)
+
+
     @async_request
     async def search_user_by_name(self, username: str, start: int, session: aiohttp.ClientSession,) -> Auteurs:
         """Retreives a list of all matching usernames, possibly none"""
@@ -90,7 +93,9 @@ class ApiRootMe():
                         return current_users
 
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
-            return None            
+            return None 
+        except TimeoutError:
+            return await self.search_user_by_name(username, start)
     
     @async_request
     async def fetch_all_challenges(self, session: aiohttp.ClientSession, start=0) -> ChallengeShort:
@@ -115,6 +120,8 @@ class ApiRootMe():
                     else:
                         return current_challenges
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
+            return current_challenges
+        except TimeoutError:
             return current_challenges
 
         return current_challenges
@@ -146,6 +153,8 @@ class ApiRootMe():
     
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
             return None
+        except TimeoutError:
+            return await self.get_challenge_by_id(idx)
 
     @async_request
     async def get_image_png(self, idx: int, session: aiohttp.ClientSession) -> str:
@@ -159,6 +168,8 @@ class ApiRootMe():
         
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
             return None
+        except TimeoutError:
+            return await self.get_image_png(idx)
 
 
     @async_request
@@ -172,3 +183,12 @@ class ApiRootMe():
                     return None         
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
             return None
+        except TimeoutError:
+            return await self.get_image_jpg(idx)
+
+
+
+
+
+
+
