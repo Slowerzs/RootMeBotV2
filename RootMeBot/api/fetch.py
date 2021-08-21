@@ -4,6 +4,7 @@ import json
 import functools
 import time
 
+from asyncio.exceptions import TimeoutError
 from aiohttp.client_exceptions import ServerDisconnectedError, ClientConnectorError, ClientPayloadError
 
 from api.extract import *
