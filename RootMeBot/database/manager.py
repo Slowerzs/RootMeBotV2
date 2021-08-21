@@ -73,7 +73,7 @@ class DatabaseManager():
 
 
         for chall in new_challenges:
-            get_new_chall(chall.idx)
+            await get_new_chall(chall.idx)
 
         #coros = [get_new_chall(chall.idx) for chall in new_challenges]
         #await asyncio.gather(*coros)

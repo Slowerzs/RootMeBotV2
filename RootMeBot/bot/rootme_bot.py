@@ -116,7 +116,7 @@ class RootMeBot():
         while True:
             
             solves = await self.database_manager.update_users()
-            print(time.localtime())
+            #print(time.localtime())
 
     def catch(self):
         @self.bot.event
