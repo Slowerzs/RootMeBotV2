@@ -57,7 +57,7 @@ class ApiRootMe():
                     aut = extract_auteur(user_data)
                     return aut 
 
-        except (ServerDisconnectedError, ConnectionResetError, ClientConnectorError, ClientPayloadError):
+        except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
             await asyncio.sleep(0.2)
             return await self.get_user_by_id(idx)
     
@@ -90,7 +90,7 @@ class ApiRootMe():
                     else:
                         return current_users
 
-        except (ServerDisconnectedError, ConnectionResetError, ClientConnectorError, ClientPayloadError):
+        except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
             await asyncio.sleep(0.2)
             return await self.search_user_by_name(username, start)
             
