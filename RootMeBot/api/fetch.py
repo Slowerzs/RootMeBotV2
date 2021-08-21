@@ -32,7 +32,7 @@ class ApiRootMe():
         self.semaphore = asyncio.BoundedSemaphore(24)
         self.session = aiohttp.ClientSession()
         self.lang = DEFAULT_LANG
-
+        self.timeout = aiohttp.ClientTimeout(total=3)
         
 
     @async_request
@@ -48,7 +48,7 @@ class ApiRootMe():
             }
 
         try:
-            async with session.get(f"{api_base_url}{auteurs_path}/{idx}", params=params, cookies=cookies_rootme) as r:
+            async with session.get(f"{api_base_url}{auteurs_path}/{idx}", params=params, cookies=cookies_rootme, timeout=self.timeout) as r:
                 if r.status == 404:
                     raise UnknownUser(idx)
         
@@ -61,7 +61,7 @@ class ApiRootMe():
             return None    
     
     @async_request
-    async def search_user_by_name(self, username: str, start: int, session: aiohttp.ClientSession) -> Auteurs:
+    async def search_user_by_name(self, username: str, start: int, session: aiohttp.ClientSession,) -> Auteurs:
         """Retreives a list of all matching usernames, possibly none"""
             
         params = {
@@ -71,7 +71,7 @@ class ApiRootMe():
             'lang': self.lang
             }
         try:
-            async with session.get(f"{api_base_url}{auteurs_path}",params=params, cookies=cookies_rootme) as r:
+            async with session.get(f"{api_base_url}{auteurs_path}",params=params, cookies=cookies_rootme, timeout=self.timeout) as r:
                 #Reset LANG
                 if self.lang != DEFAULT_LANG:
                     self.lang = DEFAULT_LANG
@@ -103,7 +103,7 @@ class ApiRootMe():
     
         current_challenges = []
         try:
-            async with session.get(f"{api_base_url}{challenges_path}", params=params, cookies=cookies_rootme) as r:
+            async with session.get(f"{api_base_url}{challenges_path}", params=params, cookies=cookies_rootme, timeout=self.timeout) as r:
                 if r.status == 200:
                     challenges_data = await r.json()
         
@@ -129,7 +129,7 @@ class ApiRootMe():
             'lang': DEFAULT_LANG
             }
         try:        
-            async with session.get(f"{api_base_url}{challenges_path}/{idx}", params=params, cookies=cookies_rootme) as r:
+            async with session.get(f"{api_base_url}{challenges_path}/{idx}", params=params, cookies=cookies_rootme, timeout=self.timeout) as r:
                 
                 if r.status == 401:
                     raise PremiumChallenge(idx)
@@ -150,7 +150,7 @@ class ApiRootMe():
     async def get_image_png(self, idx: int, session: aiohttp.ClientSession) -> str:
         url = f'https://www.root-me.org/IMG/auton{idx}.png'
         try:
-            async with session.head(url) as resp:
+            async with session.head(url, timeout=self.timeout) as resp:
                 if resp.status == 200:
                     return url
                 else:
@@ -164,7 +164,7 @@ class ApiRootMe():
     async def get_image_jpg(self, idx: int, session: aiohttp.ClientSession) -> str:
         url = f'https://www.root-me.org/IMG/auton{idx}.jpg'
         try:
-            async with session.head(url) as resp:
+            async with session.head(url, timeout=self.timeout) as resp:
                 if resp.status == 200:
                     return url
                 else:
