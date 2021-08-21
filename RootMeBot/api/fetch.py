@@ -30,7 +30,8 @@ class ApiRootMe():
 
     def __init__(self):
         self.semaphore = asyncio.BoundedSemaphore(20)
-        self.session = aiohttp.ClientSession()
+        self.connector = aiohttp.TCPConnector(limit=20)
+        self.session = aiohttp.ClientSession(connector=self.connector)
         self.lang = DEFAULT_LANG
         self.timeout = aiohttp.ClientTimeout(total=3)
         
