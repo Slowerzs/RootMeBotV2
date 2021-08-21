@@ -58,8 +58,7 @@ class ApiRootMe():
                     return aut 
 
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
-            return await self.get_user_by_id(idx)
-    
+            return None    
     
     @async_request
     async def search_user_by_name(self, username: str, start: int, session: aiohttp.ClientSession) -> Auteurs:
@@ -90,8 +89,7 @@ class ApiRootMe():
                         return current_users
 
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
-            return await self.search_user_by_name(username, start)
-            
+            return None            
     
     @async_request
     async def fetch_all_challenges(self, session: aiohttp.ClientSession, start=0) -> ChallengeShort:
@@ -116,8 +114,8 @@ class ApiRootMe():
                     else:
                         return current_challenges
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
-            return await self.fetch_all_challenges(start=start)
-        
+            return current_challenges
+
         return current_challenges
         
     
@@ -146,8 +144,8 @@ class ApiRootMe():
                     return challenge
     
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
-            return await self.get_challenge_by_id(idx)
-    
+            return None
+
     @async_request
     async def get_image_png(self, idx: int, session: aiohttp.ClientSession) -> str:
         url = f'https://www.root-me.org/IMG/auton{idx}.png'
