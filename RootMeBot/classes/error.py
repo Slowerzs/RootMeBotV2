@@ -19,3 +19,11 @@ class UnknownUser(Exception):
 		self.username = unknown_usr
 	def __str__(self) -> str:
 		return f"Error unknown username : {self.username}"
+
+
+class Banned(Exception):
+	"""Exception raised when banned"""
+	def __init__(self, time) -> None:
+		self.time = time
+	def __str__(self) -> str:
+		return f"Banned at : {self.time}"

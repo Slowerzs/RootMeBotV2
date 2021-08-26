@@ -124,8 +124,8 @@ class DatabaseManager():
             
             if not full_auteur:
                 return
-
-            print(full_auteur)
+    
+            #print(full_auteur)
 
             for validation in full_auteur.validations:
                 if validation not in old_auteur.validations:
@@ -210,12 +210,11 @@ class DatabaseManager():
         
         #24 at a time
 
-        coros = [self.update_user(aut.idx) for aut in Auteur.select()]
-        await asyncio.gather(*coros)
-
-        #for aut in Auteur.select():
-        #   print(aut)
-        #   await self.update_user(aut.idx)
+        #coros = [self.update_user(aut.idx) for aut in Auteur.select()]
+        #await asyncio.gather(*coros)
+        for aut in Auteur.select():
+           print(aut)
+           await self.update_user(aut.idx)
 
 
 

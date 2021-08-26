@@ -407,9 +407,11 @@ class RootMeBot():
         print("START")
         self.catch()
         self.bot.loop.create_task(self.init_db())
-        asyncio.ensure_future(self.cron_check_solves())
-        asyncio.ensure_future(self.cron_check_challs())
-        asyncio.ensure_future(self.cron_display())
+        self.check_solves = self.bot.loop.create_task(self.cron_check_solves())
+        self.check_challs = self.bot.loop.create_task(self.cron_check_challs())
+        self.bot.loop.create_task(self.cron_display())
+
+
         self.bot.run(TOKEN)
 
 
