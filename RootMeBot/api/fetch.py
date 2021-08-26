@@ -50,7 +50,7 @@ class ApiRootMe():
             while datetime.now() < self.ban:
                 await asyncio.sleep(1)
 
-            self.bot.unbanned()
+            await self.bot.unbanned()
 
 
         params = {
@@ -70,7 +70,7 @@ class ApiRootMe():
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
             self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
             self.session = aiohttp.ClientSession(connector=self.connector)
-            self.bot.banned()
+            await self.bot.banned()
             print(f"Banned {datetime.now()}")
 
         except TimeoutError:
@@ -114,7 +114,7 @@ class ApiRootMe():
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
             self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
             self.session = aiohttp.ClientSession(connector=self.connector)
-            self.bot.banned()
+            await self.bot.banned()
             print(f"Banned {datetime.now()}")
             return None 
         except TimeoutError:
@@ -150,7 +150,7 @@ class ApiRootMe():
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
             self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
             self.session = aiohttp.ClientSession(connector=self.connector)
-            self.bot.banned()
+            await self.bot.banned()
             print(f"Banned {datetime.now()}")
             return current_challenges
         except TimeoutError:
@@ -192,7 +192,7 @@ class ApiRootMe():
             print(f"Banned {datetime.now()}")
             self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
             self.session = aiohttp.ClientSession(connector=self.connector)
-            self.bot.banned()
+            await self.bot.banned()
             return None
         except TimeoutError:
             return await self.get_challenge_by_id(idx)
@@ -218,7 +218,7 @@ class ApiRootMe():
             print(f"Banned {datetime.now()}")
             self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
             self.session = aiohttp.ClientSession(connector=self.connector)
-            self.bot.banned()
+            await self.bot.banned()
             return None
         except TimeoutError:
             return await self.get_image_png(idx)
@@ -244,7 +244,7 @@ class ApiRootMe():
             self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
             self.session = aiohttp.ClientSession(connector=self.connector)
             print(f"Banned {datetime.now()}")
-            self.bot.banned()
+            await self.bot.banned()
             return None
         except TimeoutError:
             return await self.get_image_jpg(idx)
