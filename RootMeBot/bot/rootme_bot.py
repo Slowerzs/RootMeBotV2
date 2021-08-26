@@ -28,6 +28,14 @@ import utils.messages as utils
 
 class RootMeBot():
 
+
+    async def banned(self):
+        await self.bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game(name="Banned 😞"))
+
+    async def unbanned(self):
+        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(name="😎"))
+
+
     def __init__(self, database_manager: DatabaseManager, notification_manager: NotificationManager, *args, **kwargs) -> None:
 
         self.intents = discord.Intents.default()
@@ -55,6 +63,7 @@ class RootMeBot():
     async def init_db(self) -> None:
         """Checks if the database seems populated or not (first run)"""
         await self.bot.wait_until_ready()
+        await self.unbanned()
         print("Starting...")
         channel = self.bot.get_channel(self.BOT_CHANNEL)
 
@@ -182,7 +191,6 @@ class RootMeBot():
             """ """
 
             await utils.scoreboard(context.message.channel, self.database_manager)
-
 
         @self.bot.command(description='Add user by ID')
         @commands.check(self.after_init)

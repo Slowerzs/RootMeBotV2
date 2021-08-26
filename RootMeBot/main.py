@@ -19,18 +19,19 @@ CHANNEL = int(getenv('BOT_CHANNEL'))
 client = discord.Client()
 
 
-def main():
-	
+def main(bot):
+    
 
-	bot = RootMeBot(db_manager, notification_manager)
-	bot.start(TOKEN, CHANNEL)
+    bot.start(TOKEN, CHANNEL)
 
 
 if __name__ == "__main__":
-	rootme_api = ApiRootMe()
-	notification_manager = NotificationManager()
-	db_manager = DatabaseManager(rootme_api, notification_manager)
-	main()    
+    rootme_api = ApiRootMe()
+    notification_manager = NotificationManager()
+    db_manager = DatabaseManager(rootme_api, notification_manager)
+    bot = RootMeBot(db_manager, notification_manager)
+    rootme_api.bot = bot
+    main(bot)
 
 
 
