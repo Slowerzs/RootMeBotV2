@@ -47,6 +47,7 @@ class ApiRootMe():
             raise UnknownUser(idx)
     
         if datetime.now() < self.ban:
+            print(self.ban)
             while datetime.now() < self.ban:
                 await asyncio.sleep(1)
 
@@ -81,6 +82,7 @@ class ApiRootMe():
     async def search_user_by_name(self, username: str, start: int, session: aiohttp.ClientSession,) -> Auteurs:
         """Retreives a list of all matching usernames, possibly none"""
         if datetime.now() < self.ban:
+            print(self.ban)
             while datetime.now() < self.ban:
                 await asyncio.sleep(1)
 
@@ -124,6 +126,7 @@ class ApiRootMe():
     async def fetch_all_challenges(self, session: aiohttp.ClientSession, start=0) -> ChallengeShort:
         """Retrieves all challenges given a starting number"""
         if datetime.now() < self.ban:
+            print(self.ban)
             while datetime.now() < self.ban:
                 await asyncio.sleep(1)
 
@@ -164,6 +167,7 @@ class ApiRootMe():
     async def get_challenge_by_id(self, idx: int, session: aiohttp.ClientSession) -> ChallengeData:
         """Retreives all information about a challenge by ID"""
         if datetime.now() < self.ban:
+            print(self.ban)
             while datetime.now() < self.ban:
                 await asyncio.sleep(1)
 
@@ -201,6 +205,7 @@ class ApiRootMe():
     async def get_image_png(self, idx: int, session: aiohttp.ClientSession) -> str:
 
         if datetime.now() < self.ban:
+            print(self.ban)
             while datetime.now() < self.ban:
                 await asyncio.sleep(1)
 
@@ -228,6 +233,7 @@ class ApiRootMe():
     async def get_image_jpg(self, idx: int, session: aiohttp.ClientSession) -> str:
 
         if datetime.now() < self.ban:
+            print(self.ban)
             while datetime.now() < self.ban:
                 await asyncio.sleep(1)
 
