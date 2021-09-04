@@ -317,7 +317,7 @@ class RootMeBot():
                 auteurs = Auteur.select().where(Auteur.username.contains(search))
                 if auteurs.count() == 0:
                     await utils.cant_find(context.message.channel, search)
-
+                    return
                 elif auteurs.count() > 1:
                     all_auteurs = []
                     for aut in auteurs:
@@ -325,6 +325,7 @@ class RootMeBot():
                         auteur_data = AuteurData(aut.idx, aut.username, aut.score, aut.rank, validations)
                         all_auteurs.append(auteur_data)
                     await utils.multiple_users(context.message.channel, all_auteurs)
+                    return
                 else:
                     aut = auteurs.get()
             
