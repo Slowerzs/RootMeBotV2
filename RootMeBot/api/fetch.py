@@ -81,6 +81,7 @@ class ApiRootMe():
     @async_request
     async def search_user_by_name(self, username: str, start: int, session: aiohttp.ClientSession,) -> Auteurs:
         """Retreives a list of all matching usernames, possibly none"""
+
         if datetime.now() < self.ban:
             print(self.ban)
             while datetime.now() < self.ban:
@@ -119,8 +120,6 @@ class ApiRootMe():
             await self.bot.banned()
             print(f"Banned {datetime.now()}")
             return None 
-        except TimeoutError:
-            return await self.search_user_by_name(username, start)
     
     @async_request
     async def fetch_all_challenges(self, session: aiohttp.ClientSession, start=0) -> ChallengeShort:
