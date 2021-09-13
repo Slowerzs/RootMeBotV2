@@ -190,7 +190,7 @@ class DatabaseManager():
 
         try:    
             full_auteur = await self.rootme_api.get_user_by_id(idx)
-        except UnknownUser:
+        except:
             return None     
 
         #We check if we have all the user's solves in our db, otherwise add to it

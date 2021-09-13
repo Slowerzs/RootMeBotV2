@@ -129,7 +129,7 @@ class ApiRootMe():
             while datetime.now() < self.ban:
                 await asyncio.sleep(1)
 
-            self.bot.unbanned()
+            await self.bot.unbanned()
 
         params = {
             str(int(time.time())): str(int(time.time())),
@@ -170,7 +170,7 @@ class ApiRootMe():
             while datetime.now() < self.ban:
                 await asyncio.sleep(1)
 
-            self.bot.unbanned()
+            await self.bot.unbanned()
 
         params = {
             str(int(time.time())): str(int(time.time())),
@@ -208,7 +208,7 @@ class ApiRootMe():
             while datetime.now() < self.ban:
                 await asyncio.sleep(1)
 
-            self.bot.unbanned()
+            await self.bot.unbanned()
 
         url = f'https://www.root-me.org/IMG/auton{idx}.png'
         try:
@@ -236,7 +236,7 @@ class ApiRootMe():
             while datetime.now() < self.ban:
                 await asyncio.sleep(1)
 
-            self.bot.unbanned()
+            await self.bot.unbanned()
 
         url = f'https://www.root-me.org/IMG/auton{idx}.jpg'
         try:
