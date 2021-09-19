@@ -60,13 +60,19 @@ class ApiRootMe():
 
         try:
             async with session.get(f"{api_base_url}{auteurs_path}/{idx}", params=params, cookies=cookies_rootme, timeout=self.timeout) as r:
+                print(f"Status : {r.status}")
                 if r.status == 404:
                     raise UnknownUser(idx)
         
                 elif r.status == 200:
                     user_data = await r.json()
                     aut = extract_auteur(user_data)
-                    return aut 
+                    return aut
+
+                elif r.status == 403:
+                    print("O_o 403")
+                    await self.banned()
+                    return await self.get_user_by_id(idx)
 
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
             self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
@@ -75,6 +81,10 @@ class ApiRootMe():
             print(f"Banned {datetime.now()}")
 
         except TimeoutError:
+
+            await self.bot.banned()
+            print(f"Banned {datetime.now()}")
+
             return await self.get_user_by_id(idx)
 
 
@@ -156,6 +166,10 @@ class ApiRootMe():
             print(f"Banned {datetime.now()}")
             return current_challenges
         except TimeoutError:
+            
+            await self.bot.banned()
+            print(f"Banned {datetime.now()}")
+            
             return current_challenges
 
         return current_challenges
@@ -198,6 +212,10 @@ class ApiRootMe():
             await self.bot.banned()
             return None
         except TimeoutError:
+
+            await self.bot.banned()
+            print(f"Banned {datetime.now()}")
+
             return await self.get_challenge_by_id(idx)
 
     @async_request
@@ -225,6 +243,10 @@ class ApiRootMe():
             await self.bot.banned()
             return None
         except TimeoutError:
+
+            await self.bot.banned()
+            print(f"Banned {datetime.now()}")
+            
             return await self.get_image_png(idx)
 
 
@@ -252,6 +274,10 @@ class ApiRootMe():
             await self.bot.banned()
             return None
         except TimeoutError:
+
+            await self.bot.banned()
+            print(f"Banned {datetime.now()}")
+            
             return await self.get_image_jpg(idx)
 
 

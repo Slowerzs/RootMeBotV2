@@ -73,6 +73,7 @@ class DatabaseManager():
 
 
         for chall in new_challenges:
+            await asyncio.sleep(0.5)
             await get_new_chall(chall.idx)
 
         #coros = [get_new_chall(chall.idx) for chall in new_challenges]
@@ -215,6 +216,7 @@ class DatabaseManager():
         for aut in Auteur.select():
            print(aut)
            await self.update_user(aut.idx)
+           await asyncio.sleep(0.5)
 
 
 
