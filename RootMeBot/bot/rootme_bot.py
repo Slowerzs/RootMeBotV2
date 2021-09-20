@@ -178,7 +178,7 @@ class RootMeBot():
 
                     await utils.multiple_users(context.message.channel, all_auteurs)
                 elif auteurs.count() == 0:
-                    await utils.cant_find(context.message.channel, args)
+                    await utils.cant_find_user(context.message.channel, args)
                 else:
                     await self.database_manager.remove_user_from_db(auteurs[0].idx)
                     await utils.removed_ok(context.message.channel, auteurs[0].username)
@@ -205,14 +205,14 @@ class RootMeBot():
             try:
                 idx = int(args[0])
             except ValueError:
-                await utils.cant_find(context.message.channel, args[0])
+                await utils.cant_find_user(context.message.channel, args[0])
                 return
             aut = await self.database_manager.add_user(idx)
             
             if aut:
                 await utils.added_ok(context.message.channel, aut.username)
             else:
-                await utils.cant_find(context.message.channel, idx)
+                await utils.cant_find_user(context.message.channel, idx)
 
         @self.bot.command(description='Add user by name')
         @commands.check(self.after_init)
@@ -227,7 +227,7 @@ class RootMeBot():
                 aut = await self.database_manager.add_user(auteurs[0].idx)
                 await utils.added_ok(context.message.channel, aut.username)
             else:
-                await utils.cant_find(context.message.channel, username)
+                await utils.cant_find_user(context.message.channel, username)
 
 
         @self.bot.command(description='Change the lang for the next search')
@@ -274,7 +274,7 @@ class RootMeBot():
             if auteurs:
                 await utils.possible_users(context.message.channel, auteurs)
             else:
-                await utils.cant_find(context.message.channel, search)
+                await utils.cant_find_user(context.message.channel, search)
 
             
         @self.bot.command(description='Shows stats of a user')
@@ -316,7 +316,7 @@ class RootMeBot():
             except ValueError:
                 auteurs = Auteur.select().where(Auteur.username.contains(search))
                 if auteurs.count() == 0:
-                    await utils.cant_find(context.message.channel, search)
+                    await utils.cant_find_user(context.message.channel, search)
                     return
                 elif auteurs.count() > 1:
                     all_auteurs = []

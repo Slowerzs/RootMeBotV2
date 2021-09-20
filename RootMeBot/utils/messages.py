@@ -105,7 +105,7 @@ async def added_ok(channel: TextChannel, username: str) -> None:
     embed = discord.Embed(color=SUCCESS_GREEN, title=message_title, description=message)
     await channel.send(embed=embed)
 
-async def cant_find(channel: TextChannel, data: str) -> None:
+async def cant_find_user(channel: TextChannel, data: str) -> None:
     
     message_title = 'Error'
     message = f'Cant find user {data} :frowning:'
@@ -113,6 +113,16 @@ async def cant_find(channel: TextChannel, data: str) -> None:
     embed = discord.Embed(color=ERROR_RED, title=message_title, description=message)
 
     await channel.send(embed=embed)
+
+async def cant_find_challenge(channel: TextChannel, data: str) -> None:
+    
+    message_title = 'Error'
+    message = f'Cant find challenge {data} :frowning:'
+
+    embed = discord.Embed(color=ERROR_RED, title=message_title, description=message)
+
+    await channel.send(embed=embed)
+
 
 async def removed_ok(channel: TextChannel, username: str) -> None:
     
