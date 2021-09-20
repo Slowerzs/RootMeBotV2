@@ -407,7 +407,7 @@ class RootMeBot():
 
                     await utils.who_solved(context.message.channel, all_solvers, chall.title)   
                 else:
-                    await utils.cant_find(context.message.channel, search)
+                    await utils.cant_find_challenge(context.message.channel, search)
 
     def start(self, TOKEN, BOT_CHANNEL):
         """Starts the bot"""
