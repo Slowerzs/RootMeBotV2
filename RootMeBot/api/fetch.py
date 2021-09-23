@@ -61,7 +61,7 @@ class ApiRootMe():
         try:
             async with session.get(f"{api_base_url}{auteurs_path}/{idx}", params=params, cookies=cookies_rootme, timeout=self.timeout) as r:
                 if r.status == 404:
-                    self.ban = datetime.now() + timedelta(minutes=0, seconds=30)
+                    self.ban = datetime.now() + timedelta(minutes=0, seconds=10)
                     raise UnknownUser(idx)
         
                 elif r.status == 200:
@@ -70,7 +70,7 @@ class ApiRootMe():
                     return aut
 
                 elif r.status == 429:
-                    self.ban = datetime.now() + timedelta(minutes=0, seconds=30)
+                    self.ban = datetime.now() + timedelta(minutes=0, seconds=10)
 
                 elif r.status == 403:
                     print("O_o 403")
@@ -130,7 +130,7 @@ class ApiRootMe():
                     else:
                         return current_users
                 elif r.status == 429:
-                    self.ban = datetime.now() + timedelta(minutes=0, seconds=30)
+                    self.ban = datetime.now() + timedelta(minutes=0, seconds=10)
 
                 elif r.status == 403:
                     self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
@@ -172,7 +172,7 @@ class ApiRootMe():
                     else:
                         return current_challenges
                 elif r.status == 429:
-                    self.ban = datetime.now() + timedelta(minutes=0, seconds=30)
+                    self.ban = datetime.now() + timedelta(minutes=0, seconds=10)
 
                 elif r.status == 403:
                     self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
@@ -213,11 +213,11 @@ class ApiRootMe():
             async with session.get(f"{api_base_url}{challenges_path}/{idx}", params=params, cookies=cookies_rootme, timeout=self.timeout) as r:
                 
                 if r.status == 401:
-                    self.ban = datetime.now() + timedelta(minutes=0, seconds=30)
+                    self.ban = datetime.now() + timedelta(minutes=0, seconds=10)
                     raise PremiumChallenge(idx)
         
                 elif r.status == 404:
-                    self.ban = datetime.now() + timedelta(minutes=0, seconds=30)
+                    self.ban = datetime.now() + timedelta(minutes=0, seconds=10)
                     raise UnknownChallenge(idx)
                 
                 elif r.status == 200:
@@ -226,7 +226,7 @@ class ApiRootMe():
                     print(challenge)
                     return challenge
                 elif r.status == 429:
-                    self.ban = datetime.now() + timedelta(minutes=0, seconds=30)
+                    self.ban = datetime.now() + timedelta(minutes=0, seconds=10)
 
                 elif r.status == 403:
                     self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
@@ -262,7 +262,7 @@ class ApiRootMe():
                 if resp.status == 200:
                     return url
                 elif r.status == 429:
-                    self.ban = datetime.now() + timedelta(minutes=0, seconds=30)
+                    self.ban = datetime.now() + timedelta(minutes=0, seconds=10)
 
                 elif r.status == 403:
                     self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
@@ -302,7 +302,7 @@ class ApiRootMe():
                     return url
 
                 elif r.status == 429:
-                    self.ban = datetime.now() + timedelta(minutes=0, seconds=30)
+                    self.ban = datetime.now() + timedelta(minutes=0, seconds=10)
 
                 elif r.status == 403:
                     self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
