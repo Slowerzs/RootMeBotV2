@@ -60,8 +60,8 @@ class ApiRootMe():
 
         try:
             async with session.get(f"{api_base_url}{auteurs_path}/{idx}", params=params, cookies=cookies_rootme, timeout=self.timeout) as r:
-                print(f"Status : {r.status}")
                 if r.status == 404:
+                    self.ban = datetime.now() + timedelta(minutes=0, seconds=30)
                     raise UnknownUser(idx)
         
                 elif r.status == 200:
@@ -69,9 +69,14 @@ class ApiRootMe():
                     aut = extract_auteur(user_data)
                     return aut
 
+                elif r.status == 429:
+                    self.ban = datetime.now() + timedelta(minutes=0, seconds=30)
+
                 elif r.status == 403:
                     print("O_o 403")
-                    await self.banned()
+                    self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
+                    await self.bot.banned()
+
                     return await self.get_user_by_id(idx)
 
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
@@ -83,6 +88,7 @@ class ApiRootMe():
         except TimeoutError:
 
             await self.bot.banned()
+            self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
             print(f"Banned {datetime.now()}")
 
             return await self.get_user_by_id(idx)
@@ -123,6 +129,12 @@ class ApiRootMe():
                         return current_users + await self.search_user_by_name(username, start + 50)
                     else:
                         return current_users
+                elif r.status == 429:
+                    self.ban = datetime.now() + timedelta(minutes=0, seconds=30)
+
+                elif r.status == 403:
+                    self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
+                    await self.bot.banned()
 
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
             self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
@@ -159,6 +171,12 @@ class ApiRootMe():
                         return current_challenges + await self.fetch_all_challenges(start=start + (50 - (start % 50)))
                     else:
                         return current_challenges
+                elif r.status == 429:
+                    self.ban = datetime.now() + timedelta(minutes=0, seconds=30)
+
+                elif r.status == 403:
+                    self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
+                    await self.bot.banned()
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
             self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
             self.session = aiohttp.ClientSession(connector=self.connector)
@@ -168,6 +186,7 @@ class ApiRootMe():
         except TimeoutError:
             
             await self.bot.banned()
+            self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
             print(f"Banned {datetime.now()}")
             
             return current_challenges
@@ -194,9 +213,11 @@ class ApiRootMe():
             async with session.get(f"{api_base_url}{challenges_path}/{idx}", params=params, cookies=cookies_rootme, timeout=self.timeout) as r:
                 
                 if r.status == 401:
+                    self.ban = datetime.now() + timedelta(minutes=0, seconds=30)
                     raise PremiumChallenge(idx)
         
                 elif r.status == 404:
+                    self.ban = datetime.now() + timedelta(minutes=0, seconds=30)
                     raise UnknownChallenge(idx)
                 
                 elif r.status == 200:
@@ -204,6 +225,12 @@ class ApiRootMe():
                     challenge = extract_challenge(challenge_data, idx)
                     print(challenge)
                     return challenge
+                elif r.status == 429:
+                    self.ban = datetime.now() + timedelta(minutes=0, seconds=30)
+
+                elif r.status == 403:
+                    self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
+                    await self.bot.banned()
     
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
             print(f"Banned {datetime.now()}")
@@ -214,6 +241,7 @@ class ApiRootMe():
         except TimeoutError:
 
             await self.bot.banned()
+            self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
             print(f"Banned {datetime.now()}")
 
             return await self.get_challenge_by_id(idx)
@@ -233,6 +261,12 @@ class ApiRootMe():
             async with session.head(url, timeout=self.timeout) as resp:
                 if resp.status == 200:
                     return url
+                elif r.status == 429:
+                    self.ban = datetime.now() + timedelta(minutes=0, seconds=30)
+
+                elif r.status == 403:
+                    self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
+                    await self.bot.banned()
                 else:
                     return None     
         
@@ -245,6 +279,7 @@ class ApiRootMe():
         except TimeoutError:
 
             await self.bot.banned()
+            self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
             print(f"Banned {datetime.now()}")
             
             return await self.get_image_png(idx)
@@ -265,6 +300,14 @@ class ApiRootMe():
             async with session.head(url, timeout=self.timeout) as resp:
                 if resp.status == 200:
                     return url
+
+                elif r.status == 429:
+                    self.ban = datetime.now() + timedelta(minutes=0, seconds=30)
+
+                elif r.status == 403:
+                    self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
+                    await self.bot.banned()
+
                 else:
                     return None         
         except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError):
@@ -276,6 +319,7 @@ class ApiRootMe():
         except TimeoutError:
 
             await self.bot.banned()
+            self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
             print(f"Banned {datetime.now()}")
             
             return await self.get_image_jpg(idx)
