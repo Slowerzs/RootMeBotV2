@@ -258,8 +258,8 @@ class ApiRootMe():
 
         url = f'https://www.root-me.org/IMG/auton{idx}.png'
         try:
-            async with session.head(url, timeout=self.timeout) as resp:
-                if resp.status == 200:
+            async with session.head(url, timeout=self.timeout) as r:
+                if r.status == 200:
                     return url
                 elif r.status == 429:
                     self.ban = datetime.now() + timedelta(minutes=0, seconds=10)
@@ -297,8 +297,8 @@ class ApiRootMe():
 
         url = f'https://www.root-me.org/IMG/auton{idx}.jpg'
         try:
-            async with session.head(url, timeout=self.timeout) as resp:
-                if resp.status == 200:
+            async with session.head(url, timeout=self.timeout) as r:
+                if r.status == 200:
                     return url
 
                 elif r.status == 429:
