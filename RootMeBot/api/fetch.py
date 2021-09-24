@@ -123,6 +123,9 @@ class ApiRootMe():
         
                 elif r.status == 200:
                     users_data = await r.json()
+
+                    if users_data == [{}]:
+                        raise UnknownUser(username)
                     
                     current_users = extract_auteurs_short(users_data)
                     if len(current_users) == 50:
