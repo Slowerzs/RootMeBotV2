@@ -1,13 +1,14 @@
-from peewee import *
+from sqlalchemy import Table, Column, Integer, ForeignKey, Text, DateTime
+from sqlalchemy.orm import relationship
 from database.models.base_model import *
-from database.models.challenge_model import Challenge
 
-class Auteur(BaseModel):
-	idx = IntegerField(primary_key=True)
-	username = TextField()
-	score = IntegerField()
-	rank = IntegerField()
-	validations = ManyToManyField(Challenge, backref='solvers')
 
-	def __str__(self) -> str:
-		return f"User {self.username}-{self.idx}: {self.score} points [{self.rank}|{len(self.validations)}]"
+class Auteur(Base):
+    __tablename__ = 'auteurs'
+    idx = Column(Integer, primary_key=True)
+    username = Column(Text)
+    score = Column(Text)
+    rank = Column(Text)
+    
+    def __str__(self) -> str:
+        return f"User {self.username}-{self.idx}: {self.score} points [{self.rank}|{len(self.validations)}]"

@@ -1,7 +1,5 @@
-from peewee import Model, Proxy, SqliteDatabase
+from sqlalchemy.ext.declarative import declarative_base
 
-database = Proxy()
- 
-class BaseModel(Model):
-	class Meta:
-		database = database
+Base = declarative_base()
+
+

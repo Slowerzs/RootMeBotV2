@@ -10,11 +10,15 @@ from aiohttp.client_exceptions import ServerDisconnectedError, ClientConnectorEr
 
 from api.extract import *
 
+from database.models.auteur_model import Auteur
+from database.models.challenge_model import Challenge
+
 from classes.auteur import *
 from classes.challenge import *
 from classes.error import *
 from constants import *
 
+AuteurData = tuple[Auteur, list[int]]
 Auteurs = list[AuteurShort]
 Challenges = list[ChallengeShort]
 
@@ -66,14 +70,15 @@ class ApiRootMe():
         
                 elif r.status == 200:
                     user_data = await r.json()
-                    aut = extract_auteur(user_data)
-                    return aut
+                    aut, validations = extract_auteur(user_data)
+                    return (aut, validations)
 
                 elif r.status == 429:
                     self.ban = datetime.now() + timedelta(minutes=0, seconds=10)
+                    await self.bot.banned()
 
                 elif r.status == 403:
-                    print("O_o 403")
+                    print("Error 403")
                     self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
                     await self.bot.banned()
 
@@ -199,7 +204,7 @@ class ApiRootMe():
     
     
     @async_request
-    async def get_challenge_by_id(self, idx: int, session: aiohttp.ClientSession) -> ChallengeData:
+    async def get_challenge_by_id(self, idx: int, session: aiohttp.ClientSession) -> Challenge:
         """Retreives all information about a challenge by ID"""
         if datetime.now() < self.ban:
             print(self.ban)

@@ -4,8 +4,6 @@ import functools
 import traceback
 import time
 
-from peewee import DoesNotExist
-
 from database.manager import DatabaseManager
 from database.models.challenge_model import Challenge
 from database.models.auteur_model import Auteur
@@ -310,7 +308,7 @@ class RootMeBot():
                 auteurs = Auteur.select().where(Auteur.idx == search_id)
                 try:
                     aut = auteurs.get()
-                except DoesNotExist:
+                except: #To do change to sqlachemy does not exists
                     raise ValueError()
 
             except ValueError:

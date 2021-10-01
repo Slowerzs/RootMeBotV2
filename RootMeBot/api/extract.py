@@ -2,7 +2,7 @@ from classes.auteur import *
 from classes.challenge import *
 from datetime import datetime
 
-def extract_auteur(user_data: dict) -> AuteurData:
+def extract_auteur(user_data: dict) -> tuple[Auteur, list[int]]:
 	"""Parses data to create an Auteur"""
 	idx, user_name, user_score = int(user_data['id_auteur']), user_data['nom'], int(user_data['score'])
 	
@@ -12,12 +12,13 @@ def extract_auteur(user_data: dict) -> AuteurData:
 		#If the user's score is 0, the rank is not specified
 		user_rank = 0
 
-	user_validations = []
-	for validation in user_data['validations']:
-		user_validations.append(int(validation['id_challenge']))
-	
-	return AuteurData(idx, user_name, user_score, user_rank, user_validations)
+    aut = Auteur(idx=idx, username=user_name, score=user_score, rank=user_rank)
 
+    vals = []
+	for validation in user_data['validations']:
+		vals.append(int(validation['id_challenge']))
+	
+	return (aut, vals)
 
 def extract_auteurs_short(users_data: list) -> list[AuteurShort]:
 	"""Parses data to create a list of AuteurShort"""
@@ -31,7 +32,7 @@ def extract_auteurs_short(users_data: list) -> list[AuteurShort]:
 	
 	return users
 
-def extract_challenge(challenge_data: dict, idx) -> ChallengeData:
+def extract_challenge(challenge_data: dict, idx) -> Challenge:
 	"""Parses data to create a Challenge"""
 	titre = challenge_data['titre']
 	category = challenge_data['rubrique']
@@ -48,7 +49,7 @@ def extract_challenge(challenge_data: dict, idx) -> ChallengeData:
 	format_date = "%Y-%m-%d %H:%M:%S"
 
 	date_time = datetime.strptime(date, format_date) 
-	challenge = ChallengeData(idx, titre, category, description, score, difficulty, date_time, validations)
+	challenge = Challenge(idx=idx, title=titre, category=category, description=description, score=score, difficulty=difficulty, date=date_time, validations=validations)
 	
 
 	return challenge

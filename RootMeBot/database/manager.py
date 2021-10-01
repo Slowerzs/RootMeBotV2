@@ -1,11 +1,12 @@
-from peewee import *
-
 import asyncio
+
+from sqlalchemy import create_engine, select
+from sqlalchemy.orm import sessionmaker
 
 import database.models.base_model as db
 from database.models.challenge_model import Challenge
 from database.models.auteur_model import Auteur
-from database.models.challenge_auteur_model import ChallengeAuteur
+from database.models.base_model import Base
 
 from classes.challenge import ChallengeData, ChallengeShort
 from classes.auteur import AuteurData, AuteurShort
@@ -26,12 +27,16 @@ class DatabaseManager():
         self.rootme_api = rootme_api
         self.notification_manager = notification_manager
 
-        self.db = SqliteDatabase(database_path)
-        db.database.initialize(self.db)
+        self.engine = create_engine(f"sqlite://{database_path}")
+        Base.metadata.create_all(bind=self.engine)
+       
+        self.Session = sessionmaker(self.engine)
         
-        self.db.connect()
-        self.db.create_tables([Challenge, Auteur, ChallengeAuteur])
+        #self.db.create_tables([Challenge, Auteur, ChallengeAuteur])
 
+
+    def __del__(self):
+        self.session.close()
 
     async def add_challenge_to_db(self, idx: int) -> ChallengeData:
         """Adds a Challenge to db from api"""
@@ -47,19 +52,23 @@ class DatabaseManager():
             Challenge.create(**challenge)
         return challenge
 
-    async def get_challenge_from_db(self, idx: int) -> ChallengeData:
-        """Retreives an ChallengeData from database"""
-        chall = Challenge.select().where(Challenge.idx == idx).get()
-        challenge_data = ChallengeData(idx, chall.title, chall.category, chall.description, chall.score, chall.difficulty, chall.date, chall.validations)
-        return challenge_data       
+    async def get_challenge_from_db(self, idx: int) -> Challenge:
+        """Retreives an Challenge from database"""
+        
+        with self.Session.begin() as session:
+            chall = session.query(Challenge).filter(Challenge.idx == idx).one()
+        return chall
 
         
     async def update_challenges(self, init=False) -> None:
         """Retreives all challenges"""
 
-        old_challenges = [chall.idx for chall in Challenge.select()]
-        all_challenges = await self.rootme_api.fetch_all_challenges()
-        new_challenges = [new_chall for new_chall in all_challenges if new_chall.idx not in old_challenges]
+
+        with self.Session.begin() as session:
+            old_ids = session.query(Challenges.idx).all()
+            all_challenges = await self.rootme_api.fetch_all_challenges()
+
+        new_challenges = [new_chall for new_chall in all_challenges if new_chall.idx not in old_ids]
 
         async def get_new_chall(idx: int):
             try:
@@ -67,7 +76,10 @@ class DatabaseManager():
             except PremiumChallenge:
                 print(f"Could not retreive premium challenge {idx}")
                 return
-            Challenge.create(**full_chall)
+
+            with self.Session.begin() as session:
+                session.add(full_chall)
+
             if not init:
                 self.notification_manager.add_chall_to_queue(full_chall)
 
@@ -76,40 +88,29 @@ class DatabaseManager():
             await asyncio.sleep(0.90)
             await get_new_chall(chall.idx)
 
-        #coros = [get_new_chall(chall.idx) for chall in new_challenges]
-        #await asyncio.gather(*coros)
     
         return
 
-    async def get_all_users_from_db(self) -> list[AuteurData]:
-        """Returns all users in database in the form of AuteurData"""
-        users = []
+    async def get_all_users_from_db(self) -> list[Auteur]:
+        """Returns all users in database in the form of Auteur"""
         
-        for aut in Auteur.select():
-            validations = [i.idx for i in aut.validations]
-            auteur_data = AuteurData(aut.idx, aut.username, aut.score, aut.rank, validations)
-            users.append(auteur_data)
+        with self.Session.begin() as session:
+            users = self.query(Auteur).all()
 
         return users
 
     async def get_user_from_db(self, idx: int) -> AuteurData:
-        """Retreives an AuteurData from database"""
-        aut = Auteur.select().where(Auteur.idx == idx).get()
-        validations = [i.idx for i in aut.validations]
-        auteur_data = AuteurData(aut.idx, aut.username, aut.score, aut.rank, validations)
-        return auteur_data
+        """Retreives an Auteur from database"""
+
+        with self.Session.begin() as session:
+            auteur = session.query(Auteur).where(Auteur.idx == idx).one()
+        return auteur
 
     async def remove_user_from_db(self, idx: int) -> AuteurData:
         """Remove an Auteur from db"""
-        try:
-            aut = Auteur.select().where(Auteur.idx == idx).get()
-            print(f"Auteur to remove : {aut}")
-            validations = [i.idx for i in aut.validations]
-            auteur_data = AuteurData(aut.idx, aut.username, aut.score, aut.rank, validations)
-            aut.delete_instance()
-            return auteur_data
-        except DoesNotExist:
-            return None
+        with self.Session.begin() as session:
+            session.select(Auteur).filter(Auteur.idx == idx).delete()
+
         
 
     async def update_user(self, idx: int) -> None:
@@ -118,16 +119,11 @@ class DatabaseManager():
         try:
             #If the user already exists in our database
             old_auteur = await self.get_user_from_db(idx)
-            db_auteur = Auteur.select().where(Auteur.idx == idx).get()
 
             full_auteur = await self.rootme_api.get_user_by_id(idx)
-
-            
             if not full_auteur:
                 return
     
-            #print(full_auteur)
-
             for validation in full_auteur.validations:
                 if validation not in old_auteur.validations:
                     try:
