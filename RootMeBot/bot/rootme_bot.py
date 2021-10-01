@@ -26,14 +26,6 @@ import utils.messages as utils
 
 class RootMeBot():
 
-
-    async def banned(self):
-        await self.bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game(name="Banned 😞"))
-
-    async def unbanned(self):
-        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(name="😎"))
-
-
     def __init__(self, database_manager: DatabaseManager, notification_manager: NotificationManager, *args, **kwargs) -> None:
 
         self.intents = discord.Intents.default()
@@ -44,6 +36,13 @@ class RootMeBot():
         self.database_manager = database_manager
     
         self.init_done = False
+
+    async def banned(self):
+        await self.bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game(name="Banned 😞"))
+
+    async def unbanned(self):
+        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(name="😎"))
+
 
     async def after_init(self, func):
         print("Check OK after_init")
@@ -65,11 +64,10 @@ class RootMeBot():
         print("Starting...")
         channel = self.bot.get_channel(self.BOT_CHANNEL)
 
-        if Challenge.select().count() < 300:
+        if self.database_manager.count_challenges() < 300:
+
             await utils.init_start(channel)
-            
             await self.database_manager.update_challenges(init=True)
-            
             await utils.init_end(channel)
 
         print("Done")
@@ -220,7 +218,7 @@ class RootMeBot():
             username = ' '.join(self.get_command_args(context))
             auteurs = await self.database_manager.search_user(username)
             if len(auteurs) > 1:
-                await utils.possible_users(context.message.channel, auteurs)
+                await utils.possible_users(context.message.channel, [aut[0] for aut in auteurs])
             elif len(auteurs) == 1:
                 aut = await self.database_manager.add_user(auteurs[0].idx)
                 await utils.added_ok(context.message.channel, aut.username)

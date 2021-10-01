@@ -22,6 +22,7 @@ Challenges = list[ChallengeData]
 Auteurs = list[AuteurData]
 
 class DatabaseManager():
+
     def __init__(self, rootme_api: ApiRootMe, notification_manager: NotificationManager) -> None:
 
         self.rootme_api = rootme_api
@@ -32,9 +33,14 @@ class DatabaseManager():
        
         self.Session = sessionmaker(self.engine)
         
-        #self.db.create_tables([Challenge, Auteur, ChallengeAuteur])
 
+    def count_challenges(self) -> int:
+        """Counts number of challenges, used for initialization"""
 
+        with self.Session.begin() as session:
+            res = session.query(Challenge.idx).count()
+
+        return res
 
     async def add_challenge_to_db(self, idx: int) -> ChallengeData:
         """Adds a Challenge to db from api"""
@@ -59,14 +65,17 @@ class DatabaseManager():
 
         
     async def update_challenges(self, init=False) -> None:
-        """Retreives all challenges"""
+        """Retreives all challenges
+        For all new challenges (not """
 
 
         with self.Session.begin() as session:
-            old_ids = session.query(Challenges.idx).all()
-            all_challenges = await self.rootme_api.fetch_all_challenges()
+            old_challs = session.query(Challenge).all()
+            old_ids = [c.idx for c in old_challs]
+            all_challenges = await self.rootme_api.fetch_all_challenges()    
+            new_challenges = [new_chall for new_chall in all_challenges if new_chall.idx not in old_ids]
 
-        new_challenges = [new_chall for new_chall in all_challenges if new_chall.idx not in old_ids]
+
 
         async def get_new_chall(idx: int):
             try:
@@ -76,7 +85,12 @@ class DatabaseManager():
                 return
 
             with self.Session.begin() as session:
-                session.add(full_chall)
+                if temp_chall := session.query(Challenge.idx).filter(Challenge.idx == full_chall.idx).one_or_none():
+                    if temp_chall.score != full_chall.score:
+                        #In case of an update from Root-Me
+                        temp_chall.update(full_chall)
+                else:
+                    session.add(full_chall)
 
             if not init:
                 self.notification_manager.add_chall_to_queue(full_chall)
@@ -93,7 +107,7 @@ class DatabaseManager():
         """Returns all users in database in the form of Auteur"""
         
         with self.Session.begin() as session:
-            users = self.query(Auteur).all()
+            users = session.query(Auteur).all()
 
         return users
 
@@ -101,7 +115,7 @@ class DatabaseManager():
         """Retreives an Auteur from database"""
 
         with self.Session.begin() as session:
-            auteur = session.query(Auteur).where(Auteur.idx == idx).one()
+            auteur = session.query(Auteur).where(Auteur.idx == idx).one_or_none()
         return auteur
 
     async def remove_user_from_db(self, idx: int) -> AuteurData:
@@ -203,14 +217,11 @@ class DatabaseManager():
 
         all_new_solves = []
         
-        #24 at a time
-
-        #coros = [self.update_user(aut.idx) for aut in Auteur.select()]
-        #await asyncio.gather(*coros)
-        for aut in Auteur.select():
-           print(aut)
-           await self.update_user(aut.idx)
-           await asyncio.sleep(0.90)
+        with self.Session.begin() as session:
+            for aut in session.query(Auteur).all():
+                print(aut)
+                await self.update_user(aut.idx)
+                await asyncio.sleep(0.90)
 
 
 
