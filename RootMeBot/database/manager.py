@@ -35,8 +35,6 @@ class DatabaseManager():
         #self.db.create_tables([Challenge, Auteur, ChallengeAuteur])
 
 
-    def __del__(self):
-        self.session.close()
 
     async def add_challenge_to_db(self, idx: int) -> ChallengeData:
         """Adds a Challenge to db from api"""

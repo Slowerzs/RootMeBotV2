@@ -1,6 +1,6 @@
 asyncio
 aiohttp
 discord
-peewee
+sqlalchemy
 python-dotenv
 
