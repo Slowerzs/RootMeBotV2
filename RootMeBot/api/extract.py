@@ -25,7 +25,6 @@ def extract_auteur(user_data: dict) -> tuple[Auteur, list[int]]:
     
     aut.validations = vals
 
-
     return aut
 
 def extract_auteurs_short(users_data: list) -> list[AuteurShort]:

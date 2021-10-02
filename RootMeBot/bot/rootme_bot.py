@@ -89,7 +89,7 @@ class RootMeBot():
 
             for aut, chall, score_above in self.notification_manager.get_solve_queue():
                 if chall:
-                    db_chall = Challenge.select().where(Challenge.idx == chall.idx).get() 
+                    db_chall = await self.database_manager.get_challenge_from_db(chall.idx) 
                     if len(db_chall.solvers) <= 2:
                         is_blood = True
                     else:
@@ -162,22 +162,13 @@ class RootMeBot():
                     raise ValueError()
 
             except ValueError:
-                auteurs = Auteur.select().where(Auteur.username == args)
-                if auteurs.count() > 1:
-                    
-                    all_auteurs = []
-                    for aut in auteurs:
-                        validations = [i.idx for i in aut.validations]
-                        auteur_data = AuteurData(aut.idx, aut.username, aut.score, aut.rank, validations)
-
-                        all_auteurs.append(auteur_data)
-
-                    await utils.multiple_users(context.message.channel, all_auteurs)
-                elif auteurs.count() == 0:
+                auteurs = await self.database_manager.remove_user_from_db_by_name(args)
+                if len(auteurs) > 1:
+                    await utils.multiple_users(context.message.channel, auteurs)
+                elif len(auteurs) == 0:
                     await utils.cant_find_user(context.message.channel, args)
                 else:
-                    await self.database_manager.remove_user_from_db(auteurs[0].idx)
-                    await utils.removed_ok(context.message.channel, auteurs[0].username)
+                    await utils.removed_ok(context.message.channel, args)
     
 
         @self.bot.command(description='Show scoreboard')
@@ -205,7 +196,6 @@ class RootMeBot():
                 return
 
             aut = await self.database_manager.add_user(idx)
-            
             if aut:
                 await utils.added_ok(context.message.channel, aut.username)
             else:
@@ -219,7 +209,7 @@ class RootMeBot():
             username = ' '.join(self.get_command_args(context))
             auteurs = await self.database_manager.search_user(username)
             if len(auteurs) > 1:
-                await utils.possible_users(context.message.channel, [aut[0] for aut in auteurs])
+                await utils.possible_users(context.message.channel, auteurs)
             elif len(auteurs) == 1:
                 aut = await self.database_manager.add_user(auteurs[0].idx)
                 await utils.added_ok(context.message.channel, aut.username)

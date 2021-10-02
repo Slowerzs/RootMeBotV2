@@ -1,5 +1,5 @@
 from sqlalchemy import Table, Column, Integer, ForeignKey, Text, DateTime
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from database.models.base_model import *
 from database.models.auteur_model import Auteur
 
@@ -7,8 +7,6 @@ association_table = Table('association_auteur_challenge', Base.metadata,
         Column('challenge_id', ForeignKey('challenges.idx'), primary_key = True),
         Column('auteur_id', ForeignKey('auteurs.idx'), primary_key = True)
     )
-
-
 
 class Challenge(Base):
 
@@ -23,7 +21,8 @@ class Challenge(Base):
     validations = Column(Text)
     solvers = relationship("Auteur",
             secondary = association_table,
-            backref="validations"
+            backref=backref("validations", lazy='subquery'),
+            lazy="subquery"
     )
 
     def __str__(self) -> str:

@@ -9,8 +9,9 @@ from discord.channel import TextChannel
 
 from constants import SUCCESS_GREEN, SCOREBOARD_WHITE, NEW_YELLOW, INFO_BLUE, ERROR_RED, PING_ROLE_ROOTME
 
+from database.models.auteur_model import Auteur
 
-Auteurs = list[AuteurData]
+Auteurs = list[Auteur]
 Challenges = list[ChallengeData]
 
 async def init_start(channel: TextChannel) -> None:
@@ -86,22 +87,21 @@ async def send_new_challenge(channel: TextChannel, chall: ChallengeData) -> None
 
 async def scoreboard(channel: TextChannel, database_manager: DatabaseManager) -> None:
 
+   users = await database_manager.get_all_users_from_db()
 
-    users = await database_manager.get_all_users_from_db()
+   if not users:
+       embed = discord.Embed(color=0xff0000, title='Error', description='No users in database :frowning:')
 
-    if not users:
-        
-        embed = discord.Embed(color=0xff0000, title='Error', description='No users in database :frowning:')
-    else:
-        users = sorted(users, key=lambda x: x.score, reverse=True)
-        message_title = f'Scoreboard'
-        message = ''
-        for user in users:
-            message += f' • • • {user.username} --> {user.score} \n'
+   else:
+       users.sort(key=lambda x: x.score, reverse=True)
+       message_title = f'Scoreboard'
+       message = ''
+       for user in users:
+           message += f' • • • {user.username} --> {user.score} \n'
 
-        embed = discord.Embed(color=SCOREBOARD_WHITE, title=message_title, description=message)
+       embed = discord.Embed(color=SCOREBOARD_WHITE, title=message_title, description=message)
 
-    await channel.send(embed=embed)
+   await channel.send(embed=embed)
 
 
 async def added_ok(channel: TextChannel, username: str) -> None:

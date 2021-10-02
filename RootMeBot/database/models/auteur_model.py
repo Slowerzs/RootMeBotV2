@@ -7,8 +7,11 @@ class Auteur(Base):
     __tablename__ = 'auteurs'
     idx = Column(Integer, primary_key=True)
     username = Column(Text)
-    score = Column(Text)
+    score = Column(Integer)
     rank = Column(Text)
     
     def __str__(self) -> str:
+        return f"User {self.username}-{self.idx}: {self.score} points [{self.rank}|{len(self.validations)}]"
+
+    def __repr__(self) -> str:
         return f"User {self.username}-{self.idx}: {self.score} points [{self.rank}|{len(self.validations)}]"

@@ -31,7 +31,7 @@ class DatabaseManager():
         self.engine = create_engine(f"sqlite://{database_path}")
         Base.metadata.create_all(bind=self.engine)
        
-        self.Session = sessionmaker(self.engine)
+        self.Session = sessionmaker(self.engine, expire_on_commit=False)
         
 
     def count_challenges(self) -> int:
@@ -109,7 +109,7 @@ class DatabaseManager():
 
         return users
 
-    async def get_user_from_db(self, idx: int) -> AuteurData:
+    async def get_user_from_db(self, idx: int) -> Auteur:
         """Retreives an Auteur from database"""
 
         with self.Session.begin() as session:
@@ -117,63 +117,98 @@ class DatabaseManager():
         return auteur
 
     async def remove_user_from_db(self, idx: int) -> AuteurData:
-        """Remove an Auteur from db"""
+        """Remove an Auteur from db by id"""
         with self.Session.begin() as session:
-            session.select(Auteur).filter(Auteur.idx == idx).delete()
+            aut = session.query(Auteur).filter(Auteur.idx == idx).one_or_none()
+            if aut:
+                u = aut.username
+                aut.validations = []
+                aut.delete()
+                return u
+            else:
+                return 
+
+
+    async def remove_user_from_db_by_name(self, name: str) -> list[str]:
+        """Remove an Auteur from db by id"""
+        with self.Session.begin() as session:
+
+            aut = session.query(Auteur).filter(Auteur.username == name)
+            
+            if (v := aut.count()) == 1:
+                auteur = aut.one()
+                username = auteur.username
+                auteur.validations = []
+                aut.delete()
+                ret = [username]
+            elif v == 0:
+                ret = []
+            else:
+                ret = aut.all()
+
+        return ret
 
     async def retreive_user(self, idx: int) -> Auteur:
-        auteur = await self.rootme_api.get_user_by_id(idx)
-        
-        if not auteur:
-            return None
+        """Returns a Auteur populated properly"""
 
-        proper_validations = []
+        with self.Session.begin() as session:
+            auteur = await self.rootme_api.get_user_by_id(idx)
+            
+            if not auteur:
+                return None
+    
+            proper_validations = []
+            for validation in auteur.validations:
+                #Check if we have all the challenges in our db
+                db_chall = await self.get_challenge_from_db(validation.idx)
 
-        for validation in auteur.validations:
-            #Check if we have all the challenges in our db
-            db_chall = await self.get_challenge_from_db(validation.idx)
+                if db_chall:
+                    #We already have
+                    proper_validations.append(db_chall)
+                else:
+                    #We don't have the challenge, add it to db, then to validations
+                    proper_validations.append(self.add_challenge_to_db(validation.idx))
 
-            if db_chall:
-                #We already have
-                proper_validations.append(db_chall)
-            else:
-                #We don't have the challenge, add it to db, then to validations
-                proper_validations.append(self.add_challenge_to_db(idx))
-        
-        auteur.validations = proper_validations
+            auteur.validations = []
+
+            
+        with self.Session.begin() as session:
+            auteur.validations = proper_validations
+            session.add(session.merge(auteur))
 
         return auteur
 
 
     async def update_user(self, idx: int) -> None:
-        """Tries to update a user to database, if it doesn't exists return nothing"""
+        """Tries to update a user to database, if it doesn't exist return nothing"""
         new_solves = []
         #If the user already exists in our database
-        old_auteur = await self.get_user_from_db(idx)
 
-        full_auteur = await self.retreive_user(idx)
-        if not full_auteur:
-            return
-    
-        for validation in full_auteur.validations:
-            if validation not in old_auteur.validations:
-                #Send notification
-                new_solves.append((full_auteur, chall))
-                #Saves the new solve to the auteur
-                with self.Session.begin() as session:
-                    old_auteur = full_auteur
+        with self.Session.begin() as session: 
+            old_auteur = await self.get_user_from_db(idx)
 
-        for solve in new_solves:
-            with self.Session.begin() as session:
-                user_above, user_score = session.query(Auteur.username, Auteur.score).filter(Auteur.score > solve[0].score).order_by(Auteur.score.asc()).one_or_none()
-                above = (user_above, user_score)
-                if not user_above:
+            full_auteur = await self.retreive_user(idx)
+            if not full_auteur:
+                return
+
+
+            for validation in full_auteur.validations:
+                if validation.idx not in [i.idx for i in old_auteur.validations]:
+                    #Send notification
+                    new_solves.append((full_auteur, validation))
+
+            for solve in new_solves:
+                res = session.query(Auteur.username, Auteur.score).filter(Auteur.score > solve[0].score).order_by(Auteur.score.asc()).one_or_none()
+                if res:
+                    user_above, user_score = res
+                else:
                     #First person in scoreboard
-                    above = ("", 0)
+                    user_above, user_score = ("", 0)
+                above = (user_above, user_score)
 
-            if solve[1]:
-                #Premium challenge are None, we can't notify them :(
-                self.notification_manager.add_solve_to_queue(solve, above)
+                if solve[1]:
+                    #Premium challenge are None, we can't notify them :(
+                    self.notification_manager.add_solve_to_queue(solve, above)
 
 
 
@@ -197,7 +232,7 @@ class DatabaseManager():
 
 
     async def add_user(self, idx: int) -> Auteur:
-
+        
         aut = await self.get_user_from_db(idx)
         if not aut:
             full_auteur = await self.retreive_user(idx)
