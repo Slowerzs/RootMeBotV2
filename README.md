@@ -15,7 +15,7 @@ Then, simply run the `run.sh` file.
 ## The project
 
 This project fetches data from the [Root-Me API](https://api.www.root-me.org/) using `aiohttp`.
-It uses `peewee` to build and update the database about root-me challenges and followed users.
+It uses `SQLAlchemy` to build and update the database about root-me challenges and followed users.
 To post messages in Discord, the `discordpy` library is used.
 
 The goal is to minimize concurrent connections to the Root-Me API to avoid getting banned by the rate-limiting.

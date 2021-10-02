@@ -129,6 +129,13 @@ class DatabaseManager():
                 return 
 
 
+    async def search_challenge_from_db(self, name: str) -> list[Challenge]:
+        """Retreives a list of matching challenges in the db"""
+        with self.Session.begin() as session:
+            challs = session.query(Challenge).filter(Challenge.title.contains(name)).all()
+
+        return challs
+
     async def remove_user_from_db_by_name(self, name: str) -> list[str]:
         """Remove an Auteur from db by id"""
         with self.Session.begin() as session:
@@ -167,7 +174,9 @@ class DatabaseManager():
                     proper_validations.append(db_chall)
                 else:
                     #We don't have the challenge, add it to db, then to validations
-                    proper_validations.append(self.add_challenge_to_db(validation.idx))
+                    chall = await self.add_challenge_to_db(validation.idx)
+                    if chall:
+                        proper_validations.append(chall)
 
             auteur.validations = []
 

@@ -7,9 +7,10 @@ from classes.auteur import AuteurData
 from database.manager import DatabaseManager
 from discord.channel import TextChannel
 
-from constants import SUCCESS_GREEN, SCOREBOARD_WHITE, NEW_YELLOW, INFO_BLUE, ERROR_RED, PING_ROLE_ROOTME
+from classes.enum import Color, Stats
 
 from database.models.auteur_model import Auteur
+from database.models.challenge_model import Challenge
 
 Auteurs = list[Auteur]
 Challenges = list[ChallengeData]
@@ -21,14 +22,14 @@ async def init_start(channel: TextChannel) -> None:
 
     message = f'This seems to be the first time running the bot, please wait while the database is being initialized !'
 
-    embed = discord.Embed(color=INFO_BLUE, title=message_title, description=message)
+    embed = discord.Embed(color=Color.INFO_BLUE, title=message_title, description=message)
     await channel.send(embed=embed) 
 
 async def incorrect_usage(channel: TextChannel) -> None:
 
     message_title = 'Error :frowning:'
     message = f'See !help'
-    embed = discord.Embed(color=ERROR_RED, title=message_title, description=message)
+    embed = discord.Embed(color=Color.ERROR_RED, title=message_title, description=message)
     await channel.send(embed=embed) 
 
 
@@ -39,7 +40,7 @@ async def init_end(channel: TextChannel) -> None:
 
     message = f'You can now add users ! See !help for more infos'
 
-    embed = discord.Embed(color=INFO_BLUE, title=message_title, description=message)
+    embed = discord.Embed(color=Color.INFO_BLUE, title=message_title, description=message)
     await channel.send(embed=embed) 
 
 
@@ -62,7 +63,7 @@ async def send_new_solve(channel: TextChannel, chall: ChallengeData, aut: Auteur
     message += f'\n • New score: {aut.score}'
     message += f'\n • Validations: {chall.validations}'
 
-    embed = discord.Embed(color=NEW_YELLOW, title=message_title, description=message)
+    embed = discord.Embed(color=Color.NEW_YELLOW, title=message_title, description=message)
     
     if above[1]:
         footer = f'{above[1] - aut.score} points to overtake {above[0]}'
@@ -74,14 +75,14 @@ async def send_new_solve(channel: TextChannel, chall: ChallengeData, aut: Auteur
 async def send_new_challenge(channel: TextChannel, chall: ChallengeData) -> None:
     """Posts a new challenge in the right channel"""
 
-    ping = f'<@&{PING_ROLE_ROOTME}>'
+    ping = f'<@&{Color.PING_ROLE_ROOTME}>'
     message_title = f'New Challenge ! :open_mouth:'
 
     message = f' • {unescape(chall.title)} ({chall.score} points)'
     message += f'\n • Category: {chall.category}'
     message += f'\n • Difficulty: {chall.difficulty}'
 
-    embed = discord.Embed(color=NEW_YELLOW, title=message_title, description=message)
+    embed = discord.Embed(color=Color.NEW_YELLOW, title=message_title, description=message)
     await channel.send(ping, embed=embed)
 
 
@@ -99,7 +100,7 @@ async def scoreboard(channel: TextChannel, database_manager: DatabaseManager) ->
        for user in users:
            message += f' • • • {user.username} --> {user.score} \n'
 
-       embed = discord.Embed(color=SCOREBOARD_WHITE, title=message_title, description=message)
+       embed = discord.Embed(color=Color.SCOREBOARD_WHITE, title=message_title, description=message)
 
    await channel.send(embed=embed)
 
@@ -109,7 +110,7 @@ async def added_ok(channel: TextChannel, username: str) -> None:
     message_title = 'Success'
     message = f'{username} was succesfully added :+1:'
 
-    embed = discord.Embed(color=SUCCESS_GREEN, title=message_title, description=message)
+    embed = discord.Embed(color=Color.SUCCESS_GREEN, title=message_title, description=message)
     await channel.send(embed=embed)
 
 async def cant_find_user(channel: TextChannel, data: str) -> None:
@@ -117,7 +118,7 @@ async def cant_find_user(channel: TextChannel, data: str) -> None:
     message_title = 'Error'
     message = f'Cant find user {data} :frowning:'
 
-    embed = discord.Embed(color=ERROR_RED, title=message_title, description=message)
+    embed = discord.Embed(color=Color.ERROR_RED, title=message_title, description=message)
 
     await channel.send(embed=embed)
 
@@ -126,7 +127,7 @@ async def cant_find_challenge(channel: TextChannel, data: str) -> None:
     message_title = 'Error'
     message = f'Cant find challenge {data} :frowning:'
 
-    embed = discord.Embed(color=ERROR_RED, title=message_title, description=message)
+    embed = discord.Embed(color=Color.ERROR_RED, title=message_title, description=message)
 
     await channel.send(embed=embed)
 
@@ -136,7 +137,7 @@ async def removed_ok(channel: TextChannel, username: str) -> None:
     message_title = 'Success'
     message = f'{username} was succesfully removed :wave:'
 
-    embed = discord.Embed(color=SUCCESS_GREEN, title=message_title, description=message)
+    embed = discord.Embed(color=Color.SUCCESS_GREEN, title=message_title, description=message)
     await channel.send(embed=embed)
 
 
@@ -149,19 +150,19 @@ async def possible_users(channel: TextChannel, auteurs: Auteurs) -> None:
     for auteur in auteurs:
         message += f' • • • {auteur.username}: {auteur.score} points --> ID {auteur.idx}\n'
 
-    embed = discord.Embed(color=INFO_BLUE, title=message_title, description=message)
+    embed = discord.Embed(color=Color.INFO_BLUE, title=message_title, description=message)
     await channel.send(embed=embed)
 
 
-async def who_solved(channel: TextChannel, auteurs: Auteurs, chall_name: str) -> None:
+async def who_solved(channel: TextChannel, chall: Challenge) -> None:
     
-    message_title = f'Solvers of {unescape(chall_name)} :sunglasses:'
+    message_title = f'Solvers of {unescape(chall.title)} :sunglasses:'
     message = ''
-    for auteur in auteurs:
+    for auteur in chall.solvers:
         message += f' • • • {auteur.username}\n' 
 
 
-    embed = discord.Embed(color=INFO_BLUE, title=message_title, description=message)
+    embed = discord.Embed(color=Color.INFO_BLUE, title=message_title, description=message)
     await channel.send(embed=embed)
 
 
@@ -169,7 +170,7 @@ async def multiple_challenges(channel: TextChannel, challenges: Challenges) -> N
 
     message_title = f'Multiple challenges found :thinking:'
 
-    embed = discord.Embed(color=ERROR_RED, title=message_title)
+    embed = discord.Embed(color=Color.ERROR_RED, title=message_title)
     
     first_column = ''
     second_column = ''
@@ -190,7 +191,7 @@ async def multiple_users(channel: TextChannel, auteurs: Auteurs) -> None:
     second_column = ''
     third_column = ''
 
-    embed = discord.Embed(color=ERROR_RED, title=message_title)
+    embed = discord.Embed(color=Color.ERROR_RED, title=message_title)
     
     for aut in auteurs:
         first_column += f'\n{aut.username}'
@@ -203,38 +204,49 @@ async def multiple_users(channel: TextChannel, auteurs: Auteurs) -> None:
     await channel.send(embed=embed)
 
 
-async def profile(channel: TextChannel, auteur: AuteurData, stats_glob: list[int], solves: list[int], image_url: str) -> None:
+async def profile(channel: TextChannel, auteur: Auteur, stats_glob: list[int], solves: list[int], image_url: str) -> None:
 
     message_title = f'Profile of {auteur.username}'
     
-    nb_web_client, nb_web_server, nb_app_script, nb_cryptanalyse, nb_programmation, nb_steganographie, nb_cracking, nb_realiste, nb_reseau, nb_forensic, nb_app_systeme = stats_glob
-    solves_web_client, solves_web_server, solves_app_script, solves_cryptanalyse, solves_programmation, solves_steganographie, solves_cracking, solves_realiste, solves_reseau, solves_forensic, solves_app_systeme = solves
+    solves = {
+            Stats.WEB_CLIENT : len([i if i.category == 'Web - Client' for i in auteur.validations])
+            Stats.APP_SCRIPT : len([i if i.category == 'App - Script' for i in auteur.validations])
+            Stats.PROGRAMMING : len([i if i.category == 'Programmation' for i in auteur.validations])
+            Stats.CRACKING = len([i if i.category == 'Cracking' for i in auteur.validations])
+            Stats.NETWORK : len([i if i.category == 'Réseau' for i in auteur.validations])
+            Stats.APP_SYSTEM : len([i if i.category == 'App - Système' for i in auteur.validations])
+            Stats.WEB_SERVER : len([i if i.category == 'Web - Serveur' for i in auteur.validations])
+            Stats.CRYPTANALYSIS : len([i if i.category == 'Cryptanalyse' for i in auteur.validations])
+            Stats.STEGANOGRAPHY : len([i if i.category == 'Stéganographie' for i in auteur.validations])
+            Stats.REALIST : len([i if i.category == 'Réaliste' for i in auteur.validations])
+            Stats.FORENSICS : len([i if i.category == 'Forensic' for i in auteur.validations])
+            }
 
     first_column = f'**\nWeb Client**'
-    first_column += f'\n{solves_web_client}/{nb_web_client}'
+    first_column += f'\n{solves[Stats.WEB_CLIENT]}/{stats_glob[Stats.WEB_CLIENT]}'
     first_column += f'\n**App-Script**'
-    first_column += f'\n{solves_app_script}/{nb_app_script}'
+    first_column += f'\n{solves[Stats.APP_SCRIPT]}/{stats_glob[Stats.APP_SCRIPT]}'
     first_column += f'\n**Programmation**'
-    first_column += f'\n{solves_programmation}/{nb_programmation}'
+    first_column += f'\n{solves[Stats.PROGRAMMING]}/{stats_glob[Stats.PROGRAMMING]}'
     first_column += f'\n**Cracking**'
-    first_column += f'\n{solves_cracking}/{nb_cracking}'
+    first_column += f'\n{solves[Stats.CRACKING]}/{stats_glob[Stats.CRACKING]}'
     first_column += f'\n**Reseau**'
-    first_column += f'\n{solves_reseau}/{nb_reseau}'
+    first_column += f'\n{solves[Stats.NETWORK]}/{stats_glob[Stats.NETWORK]}'
     first_column += f'\n**App-Système**'
-    first_column += f'\n{solves_app_systeme}/{nb_app_systeme}'
+    first_column += f'\n{solves[Stats.APP_SYSTEM]}/{stats_glob[Stats.APP_SYSTEM]}'
 
     second_column = f'**\nWeb Serveur**'
-    second_column += f'\n{solves_web_server}/{nb_web_server}'
+    second_column += f'\n{solves[Stats.WEB_SERVER]}/{stats_glob[Stats.WEB_SERVER]}'
     second_column += f'\n**Cryptanalyse**'
-    second_column += f'\n{solves_cryptanalyse}/{nb_cryptanalyse}'
+    second_column += f'\n{solves[Stats.CRYPTANALYSIS]}/{stats_glob[Stats.CRYPTANALYSIS]}'
     second_column += f'\n**Steganographie**'
-    second_column += f'\n{solves_steganographie}/{nb_steganographie}'
+    second_column += f'\n{solves[Stats.STEGANOGRAPHY]}/{stats_glob[Stats.STEGANOGRAPHY]}'
     second_column += f'\n**Realiste**'
-    second_column += f'\n{solves_realiste}/{nb_realiste}'
+    second_column += f'\n{solves[Stats.REALIST]}/{stats_glob[Stats.REALIST]}'
     second_column += f'\n**Forensic**'
-    second_column += f'\n{solves_forensic}/{nb_forensic}'
+    second_column += f'\n{solves[Stats.FORENSICS]}/{stats_glob[Stats.FORENSICS]}'
 
-    embed = discord.Embed(color=INFO_BLUE, title=message_title)
+    embed = discord.Embed(color=Color.INFO_BLUE, title=message_title)
 
     embed.add_field(name=f'Score: {auteur.score}', value=first_column, inline=True)
     embed.add_field(name=f'**\n**', value=f'**\n**', inline=True)
@@ -253,20 +265,20 @@ async def usage(channel: TextChannel) -> None:
     message_title = f'Error'
     message = f'Incorrect usage, see !help'
 
-    embed = discord.Embed(color=ERROR_RED, title=message_title, description=message)
+    embed = discord.Embed(color=Color.ERROR_RED, title=message_title, description=message)
     await channel.send(embed=embed)
 
 async def lang(channel: TextChannel, lang: str) -> None:
 
     message_title = f"Lang changed"
     message = f'The lang for the next search has been updated ! :flag_{lang}:'
-    embed = discord.Embed(color=SUCCESS_GREEN, title=message_title, description=message)
+    embed = discord.Embed(color=Color.SUCCESS_GREEN, title=message_title, description=message)
     await channel.send(embed=embed)
 
 async def unknown_lang(channel: TextChannel, lang: str) -> None:
     message_title = f"Unknown lang"
     message = f'Can\'t find lang {lang}. Available languages are : "en", "fr", "de", "es", "ru"'
-    embed = discord.Embed(color=ERROR_RED, title=message_title, description=message)
+    embed = discord.Embed(color=Color.ERROR_RED, title=message_title, description=message)
     await channel.send(embed=embed)
 
 

@@ -20,14 +20,6 @@ DEFAULT_LANG = "fr"
 database_path = "/opt/db/rootme.db"
 LOG_PATH = "/opt/db/log.txt"
 
-### COLORS ######
-
-SUCCESS_GREEN = 0x91f723
-SCOREBOARD_WHITE = 0xffffff
-NEW_YELLOW = 0xffde26
-INFO_BLUE = 0x99c0ff
-ERROR_RED = 0xff0000
-
 ### BOT CONSTANTS ###
 
 PING_ROLE_ROOTME = getenv("PING_ROLE_ROOTME")

@@ -364,35 +364,23 @@ class RootMeBot():
                 #Search by id
                 search_id = int(search)
 
-                chall = Challenge.select().where(Challenge.idx == search_id).get()
+                chall = await self.database_manager.get_challenge_from_db(search_id)                
                 
-                all_solvers = []
-                for solver in Challenge.select().where(Challenge.idx == search_id).get().solvers:
-                    all_solvers.append(solver)
-
-                await utils.who_solved(context.message.channel, all_solvers, chall.title)
+                if chall:
+                    await utils.who_solved(context.message.channel, chall)
+                else:
+                    await utils.cant_find_challenge(context.message.channel, search)
 
             except ValueError:
                 #Search by name
-                results = Challenge.select().where(Challenge.title.contains(search))
-                if results.count() > 1:
-
-                    challs = []
-                    for chall in results:
-                        challenge_data = ChallengeData(chall.idx, chall.title, chall.category, 
-                                        chall.description, chall.score, chall.difficulty, chall.date, chall.validations)
-                        challs.append(challenge_data)
-                        
-                        
-                    await utils.multiple_challenges(context.message.channel, challs)
-                elif results.count() == 1:
-                    chall = results.get()
+                results = await self.database_manager.search_challenge_from_db(search)
+                if len(results) > 1:
+                    await utils.multiple_challenges(context.message.channel, results)
                 
-                    all_solvers = []
-                    for solver in chall.solvers:
-                        all_solvers.append(solver)
+                elif len(results) == 1:
+                    chall = results[0]
+                    await utils.who_solved(context.message.channel, chall)
 
-                    await utils.who_solved(context.message.channel, all_solvers, chall.title)   
                 else:
                     await utils.cant_find_challenge(context.message.channel, search)
 

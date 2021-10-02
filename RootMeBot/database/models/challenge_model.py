@@ -25,6 +25,8 @@ class Challenge(Base):
             lazy="subquery"
     )
 
+    def __repr__(self) -> str:
+        return f"Challenge {self.title}: {self.category} [{self.score}]"
     def __str__(self) -> str:
         return f"Challenge {self.title}: {self.category} [{self.score}]"
 
