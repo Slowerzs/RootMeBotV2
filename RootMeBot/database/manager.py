@@ -42,25 +42,23 @@ class DatabaseManager():
 
         return res
 
-    async def add_challenge_to_db(self, idx: int) -> ChallengeData:
+    async def add_challenge_to_db(self, idx: int) -> Challenge:
         """Adds a Challenge to db from api"""
-
         try:
             challenge = await self.rootme_api.get_challenge_by_id(idx)
-        
         except PremiumChallenge:
             return None
-        try:
-            Challenge.update(**challenge)
-        except DoesNotExist:
-            Challenge.create(**challenge)
+
+        with self.Session.begin() as session:
+            session.add(challenge)#probably need to consider that we already have it ?
+
         return challenge
 
     async def get_challenge_from_db(self, idx: int) -> Challenge:
         """Retreives an Challenge from database"""
         
         with self.Session.begin() as session:
-            chall = session.query(Challenge).filter(Challenge.idx == idx).one()
+            chall = session.query(Challenge).filter(Challenge.idx == idx).one_or_none()
         return chall
 
         
@@ -123,55 +121,64 @@ class DatabaseManager():
         with self.Session.begin() as session:
             session.select(Auteur).filter(Auteur.idx == idx).delete()
 
+    async def retreive_user(self, idx: int) -> Auteur:
+        auteur = await self.rootme_api.get_user_by_id(idx)
         
+        if not auteur:
+            return None
+
+        proper_validations = []
+
+        for validation in auteur.validations:
+            #Check if we have all the challenges in our db
+            db_chall = await self.get_challenge_from_db(validation.idx)
+
+            if db_chall:
+                #We already have
+                proper_validations.append(db_chall)
+            else:
+                #We don't have the challenge, add it to db, then to validations
+                proper_validations.append(self.add_challenge_to_db(idx))
+        
+        auteur.validations = proper_validations
+
+        return auteur
+
 
     async def update_user(self, idx: int) -> None:
         """Tries to update a user to database, if it doesn't exists return nothing"""
         new_solves = []
-        try:
-            #If the user already exists in our database
-            old_auteur = await self.get_user_from_db(idx)
+        #If the user already exists in our database
+        old_auteur = await self.get_user_from_db(idx)
 
-            full_auteur = await self.rootme_api.get_user_by_id(idx)
-            if not full_auteur:
-                return
+        full_auteur = await self.retreive_user(idx)
+        if not full_auteur:
+            return
     
-            for validation in full_auteur.validations:
-                if validation not in old_auteur.validations:
-                    try:
-                        chall = await self.rootme_api.get_challenge_by_id(validation)
-                        if chall:
-                            Challenge.update(**chall)
-                    except DoesNotExist:
-                        chall = await self.add_challenge_to_db(validation)
-                    except PremiumChallenge:
-                        continue
-                    if chall:
-                        #Send notification
-                        new_solves.append((full_auteur, chall))
-                        #Saves the new solve to the auteur
-                        db_auteur.validations.add(Challenge.select().where(Challenge.idx == validation))
-                        #Update score
-                        db_auteur.score = full_auteur.score
-                        db_auteur.rank = full_auteur.rank
-                        db_auteur.save()
+        for validation in full_auteur.validations:
+            if validation not in old_auteur.validations:
+                #Send notification
+                new_solves.append((full_auteur, chall))
+                #Saves the new solve to the auteur
+                with self.Session.begin() as session:
+                    old_auteur = full_auteur
 
-            for solve in new_solves:
-                try:
-                    user_above = Auteur.select().where(Auteur.score > solve[0].score).order_by(Auteur.score.asc()).get()
-                    above = (user_above.username, user_above.score)
-                except DoesNotExist:
+        for solve in new_solves:
+            with self.Session.begin() as session:
+                user_above, user_score = session.query(Auteur.username, Auteur.score).filter(Auteur.score > solve[0].score).order_by(Auteur.score.asc()).one_or_none()
+                above = (user_above, user_score)
+                if not user_above:
                     #First person in scoreboard
                     above = ("", 0)
 
-                if solve[1]:
-                    #Premium challenge are None, we can't notify them :(
-                    self.notification_manager.add_solve_to_queue(solve, above)
+            if solve[1]:
+                #Premium challenge are None, we can't notify them :(
+                self.notification_manager.add_solve_to_queue(solve, above)
 
-        except DoesNotExist:
-            return 
+
 
     async def search_user(self, username: str) -> Auteurs:
+        """Search user by name"""
         full_auteurs = []
         try:
             auteurs = await self.rootme_api.search_user_by_name(username, 0)
@@ -189,28 +196,15 @@ class DatabaseManager():
         return full_auteurs
 
 
-    async def add_user(self, idx: int) -> AuteurData:
+    async def add_user(self, idx: int) -> Auteur:
 
-        try:
-            aut = await self.get_user_from_db(idx)
+        aut = await self.get_user_from_db(idx)
+        if not aut:
+            full_auteur = await self.retreive_user(idx)
+            return full_auteur
+        else:
             return aut
-        except DoesNotExist:
-            pass
 
-        try:    
-            full_auteur = await self.rootme_api.get_user_by_id(idx)
-        except:
-            return None     
-
-        #We check if we have all the user's solves in our db, otherwise add to it
-        for validation in full_auteur.validations:
-            try:
-                await self.get_challenge_from_db(validation)
-            except DoesNotExist:
-                await self.add_challenge_to_db(validation)
-
-        Auteur.create(**full_auteur)        
-        return full_auteur
 
 
     async def update_users(self) -> None:

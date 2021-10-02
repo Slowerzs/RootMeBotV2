@@ -4,6 +4,7 @@ from datetime import datetime
 
 from database.models.auteur_model import Auteur
 from database.models.challenge_model import Challenge
+from database.models.base_model import Base
 
 
 def extract_auteur(user_data: dict) -> tuple[Auteur, list[int]]:
@@ -20,9 +21,12 @@ def extract_auteur(user_data: dict) -> tuple[Auteur, list[int]]:
 
     vals = []
     for validation in user_data['validations']:
-        vals.append(int(validation['id_challenge']))
+        vals.append(Challenge(idx=int(validation['id_challenge'])))
     
-    return (aut, vals)
+    aut.validations = vals
+
+
+    return aut
 
 def extract_auteurs_short(users_data: list) -> list[AuteurShort]:
     """Parses data to create a list of AuteurShort"""

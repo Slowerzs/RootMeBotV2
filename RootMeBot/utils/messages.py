@@ -23,6 +23,13 @@ async def init_start(channel: TextChannel) -> None:
     embed = discord.Embed(color=INFO_BLUE, title=message_title, description=message)
     await channel.send(embed=embed) 
 
+async def incorrect_usage(channel: TextChannel) -> None:
+
+    message_title = 'Error :frowning:'
+    message = f'See !help'
+    embed = discord.Embed(color=ERROR_RED, title=message_title, description=message)
+    await channel.send(embed=embed) 
+
 
 async def init_end(channel: TextChannel) -> None:
     """Initialization complete"""

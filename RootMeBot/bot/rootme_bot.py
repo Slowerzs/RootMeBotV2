@@ -201,8 +201,9 @@ class RootMeBot():
             try:
                 idx = int(args[0])
             except ValueError:
-                await utils.cant_find_user(context.message.channel, args[0])
+                await utils.incorrect_usage(context.message.channel, args[0])
                 return
+
             aut = await self.database_manager.add_user(idx)
             
             if aut:

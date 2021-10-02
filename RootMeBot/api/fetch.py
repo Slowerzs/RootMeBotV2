@@ -12,15 +12,16 @@ from api.extract import *
 
 from database.models.auteur_model import Auteur
 from database.models.challenge_model import Challenge
+from database.models.base_model import Base
 
 from classes.auteur import *
 from classes.challenge import *
 from classes.error import *
 from constants import *
 
-AuteurData = tuple[Auteur, list[int]]
 Auteurs = list[AuteurShort]
 Challenges = list[ChallengeShort]
+
 
 
 def async_request(func):
@@ -44,7 +45,7 @@ class ApiRootMe():
         self.ban = datetime.now()
 
     @async_request
-    async def get_user_by_id(self, idx: int, session: aiohttp.ClientSession) -> AuteurData:
+    async def get_user_by_id(self, idx: int, session: aiohttp.ClientSession) -> Auteur:
         """Retreives an Auteur by id"""
         
         if idx == 0:
@@ -70,8 +71,8 @@ class ApiRootMe():
         
                 elif r.status == 200:
                     user_data = await r.json()
-                    aut, validations = extract_auteur(user_data)
-                    return (aut, validations)
+                    aut = extract_auteur(user_data)
+                    return aut
 
                 elif r.status == 429:
                     self.ban = datetime.now() + timedelta(minutes=0, seconds=10)
@@ -108,8 +109,7 @@ class ApiRootMe():
             while datetime.now() < self.ban:
                 await asyncio.sleep(1)
 
-            self.bot.unbanned()
-
+            await self.bot.unbanned()
 
         params = {
             'nom' : username,
@@ -117,6 +117,7 @@ class ApiRootMe():
             str(int(time.time())): str(int(time.time())),
             'lang': self.lang
             }
+
         try:
             async with session.get(f"{api_base_url}{auteurs_path}",params=params, cookies=cookies_rootme, timeout=self.timeout) as r:
                 #Reset LANG
