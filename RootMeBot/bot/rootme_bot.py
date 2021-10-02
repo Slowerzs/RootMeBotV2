@@ -277,73 +277,33 @@ class RootMeBot():
 
             search = str(' '.join(args))
 
-            nb_web_client = Challenge.select().where(Challenge.category == 'Web - Client').count()
-            nb_web_server = Challenge.select().where(Challenge.category == 'Web - Serveur').count()
-            nb_app_script = Challenge.select().where(Challenge.category == 'App - Script').count()
-            nb_cryptanalyse = Challenge.select().where(Challenge.category == 'Cryptanalyse').count()
-            nb_programmation = Challenge.select().where(Challenge.category == 'Programmation').count()
-            nb_steganographie = Challenge.select().where(Challenge.category == 'Stéganographie').count()
-            nb_cracking = Challenge.select().where(Challenge.category == 'Cracking').count()
-            nb_realiste = Challenge.select().where(Challenge.category == 'Réaliste').count()
-            nb_reseau = Challenge.select().where(Challenge.category == 'Réseau').count()
-            nb_forensic = Challenge.select().where(Challenge.category == 'Forensic').count()
-            nb_app_systeme = Challenge.select().where(Challenge.category == 'App - Système').count()
-
-            values = [nb_web_client, nb_web_server, nb_app_script, nb_cryptanalyse, nb_programmation,
-                    nb_steganographie, nb_cracking, nb_realiste, nb_reseau, nb_forensic, nb_app_systeme]
-
             try:
                 search_id = int(search)
-                auteurs = Auteur.select().where(Auteur.idx == search_id)
-                try:
-                    aut = auteurs.get()
-                except: #To do change to sqlachemy does not exists
-                    raise ValueError()
+                auteur = await self.database_manager.get_user_from_db(search_id)
 
             except ValueError:
-                auteurs = Auteur.select().where(Auteur.username.contains(search))
-                if auteurs.count() == 0:
+                auteurs = await self.database_manager.search_user_from_db(search)
+
+                if len(auteurs) == 0:
                     await utils.cant_find_user(context.message.channel, search)
                     return
-                elif auteurs.count() > 1:
-                    all_auteurs = []
-                    for aut in auteurs:
-                        validations = [i.idx for i in aut.validations]
-                        auteur_data = AuteurData(aut.idx, aut.username, aut.score, aut.rank, validations)
-                        all_auteurs.append(auteur_data)
-                    await utils.multiple_users(context.message.channel, all_auteurs)
+                elif len(auteurs) > 1:
+                    await utils.multiple_users(context.message.channel, auteurs)
                     return
                 else:
-                    aut = auteurs.get()
+                    auteur = auteurs[0]
             
 
-            #
-            validations = [i.idx for i in aut.validations]
-                    
-                        
-            solves_web_client = aut.validations.select().where(Challenge.category == 'Web - Client').count()
-            solves_web_server = aut.validations.select().where(Challenge.category == 'Web - Serveur').count()
-            solves_app_script = aut.validations.select().where(Challenge.category == 'App - Script').count()
-            solves_cryptanalyse = aut.validations.select().where(Challenge.category == 'Cryptanalyse').count()
-            solves_programmation = aut.validations.select().where(Challenge.category == 'Programmation').count()
-            solves_steganographie = aut.validations.select().where(Challenge.category == 'Stéganographie').count()
-            solves_cracking = aut.validations.select().where(Challenge.category == 'Cracking').count()
-            solves_realiste = aut.validations.select().where(Challenge.category == 'Réaliste').count()
-            solves_reseau = aut.validations.select().where(Challenge.category == 'Réseau').count()
-            solves_forensic = aut.validations.select().where(Challenge.category == 'Forensic').count()
-            solves_app_systeme = aut.validations.select().where(Challenge.category == 'App - Système').count()
-
-            solves = [solves_web_client, solves_web_server, solves_app_script, solves_cryptanalyse, solves_programmation,
-                    solves_steganographie, solves_cracking, solves_realiste, solves_reseau, solves_forensic, solves_app_systeme]
-
-            auteur_data = AuteurData(aut.idx, aut.username, aut.score, aut.rank, validations)
-            image_profile = await self.database_manager.rootme_api.get_image_png(aut.idx)
+            image_profile = await self.database_manager.rootme_api.get_image_png(auteur.idx)
+            
             if not image_profile:
-                image_profile = await self.database_manager.rootme_api.get_image_jpg(aut.idx)
+                image_profile = await self.database_manager.rootme_api.get_image_jpg(auteur.idx)
             if not image_profile:
                 image_profile = 'https://www.root-me.org/IMG/auton0.png'
 
-            await utils.profile(context.message.channel, auteur_data, values, solves, image_profile)
+            stats_glob = await self.database_manager.get_stats()
+
+            await utils.profile(context.message.channel, auteur, stats_glob, image_profile)
 
 
 

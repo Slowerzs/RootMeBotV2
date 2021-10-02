@@ -1,6 +1,6 @@
 import asyncio
 
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 
 import database.models.base_model as db
@@ -11,6 +11,8 @@ from database.models.base_model import Base
 from classes.challenge import ChallengeData, ChallengeShort
 from classes.auteur import AuteurData, AuteurShort
 from classes.error import *
+from classes.enums import Stats
+
 
 from api.fetch import ApiRootMe
 from constants import database_path
@@ -109,6 +111,14 @@ class DatabaseManager():
 
         return users
 
+    async def search_user_from_db(self, name: str) -> list[Auteur]:
+        """Returns a list of users whose username contains the search"""
+
+        with self.Session.begin() as session:
+            users = session.query(Auteur).filter(Auteur.username.contains(name)).all()
+
+        return users
+
     async def get_user_from_db(self, idx: int) -> Auteur:
         """Retreives an Auteur from database"""
 
@@ -135,6 +145,8 @@ class DatabaseManager():
             challs = session.query(Challenge).filter(Challenge.title.contains(name)).all()
 
         return challs
+
+
 
     async def remove_user_from_db_by_name(self, name: str) -> list[str]:
         """Remove an Auteur from db by id"""
@@ -207,7 +219,7 @@ class DatabaseManager():
                     new_solves.append((full_auteur, validation))
 
             for solve in new_solves:
-                res = session.query(Auteur.username, Auteur.score).filter(Auteur.score > solve[0].score).order_by(Auteur.score.asc()).one_or_none()
+                res = session.query(Auteur.username, Auteur.score).filter(Auteur.score > solve[0].score).order_by(Auteur.score.asc()).limit(1).one_or_none()
                 if res:
                     user_above, user_score = res
                 else:
@@ -241,7 +253,7 @@ class DatabaseManager():
 
 
     async def add_user(self, idx: int) -> Auteur:
-        
+        """Adds a user from the api if we don't already have it"""
         aut = await self.get_user_from_db(idx)
         if not aut:
             full_auteur = await self.retreive_user(idx)
@@ -250,18 +262,38 @@ class DatabaseManager():
             return aut
 
 
-
     async def update_users(self) -> None:
+        """Updates all users"""
 
-        all_new_solves = []
-        
         with self.Session.begin() as session:
             for aut in session.query(Auteur).all():
                 print(aut)
                 await self.update_user(aut.idx)
                 await asyncio.sleep(0.90)
 
+    async def get_stats(self) -> dict:
+        """Queries db for how many chall per category"""
+        
+        with self.Session.begin() as session:
+            res = session.query(Challenge.category, func.count(Challenge.idx)).group_by(Challenge.category).all()
+            print(res)
+            stats = {
+                Stats.APP_SCRIPT: next(x[1] for x in res if x[0] == 'App - Script'),
+                Stats.APP_SYSTEM: next(x[1] for x in res if x[0] == 'App - Système'),
+                Stats.CRACKING: next(x[1] for x in res if x[0] == 'Cracking'),
+                Stats.WEB_CLIENT: next(x[1] for x in res if x[0] == 'Web - Client'),
+                Stats.WEB_SERVER: next(x[1] for x in res if x[0] == 'Web - Serveur'),
+                Stats.FORENSICS: next(x[1] for x in res if x[0] == 'Forensic'),
+                Stats.REALIST: next(x[1] for x in res if x[0] == 'Réaliste'),
+                Stats.CRYPTANALYSIS: next(x[1] for x in res if x[0] == 'Cryptanalyse'),
+                Stats.NETWORK: next(x[1] for x in res if x[0] == 'Réseau'),
+                Stats.STEGANOGRAPHY: next(x[1] for x in res if x[0] == 'Stéganographie') ,
+                Stats.PROGRAMMING: next(x[1] for x in res if x[0] == 'Programmation') 
+                    }
 
+
+        return stats
+    
 
 
 
