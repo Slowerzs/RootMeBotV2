@@ -307,7 +307,7 @@ async def unknown_lang(channel: TextChannel, lang: str) -> None:
 
 async def add_scoreboard(channel: TextChannel, sc: Scoreboard) -> None:
     message_title = f"Scoreboard Created"
-    message = f'Scoreboard {sc.name} was successfully created (id {sc.idx}) :+1:'
+    message = f'Scoreboard {sc.name} was successfully created :+1:'
     embed = discord.Embed(color=Color.SUCCESS_GREEN.value, title=message_title, description=message)
     await channel.send(embed=embed)
 
