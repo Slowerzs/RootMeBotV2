@@ -2,19 +2,19 @@ import discord
 import aiohttp
 
 from html import unescape
-from classes.challenge import ChallengeData
-from classes.auteur import AuteurData
+
 from database.manager import DatabaseManager
 from discord.channel import TextChannel
 
 from classes.enums import Color, Stats
+from classes.views import ScoreboardView
 
 from database.models.auteur_model import Auteur
 from database.models.scoreboard_model import Scoreboard
 from database.models.challenge_model import Challenge
 
 Auteurs = list[Auteur]
-Challenges = list[ChallengeData]
+Challenges = list[Challenge]
 
 async def init_start(channel: TextChannel) -> None:
     """First time running message"""
@@ -46,7 +46,7 @@ async def init_end(channel: TextChannel) -> None:
 
 
 
-async def send_new_solve(channel: TextChannel, chall: ChallengeData, aut: AuteurData, above: tuple[str, int], is_blood: bool) -> None:
+async def send_new_solve(channel: TextChannel, chall: Challenge, aut: Auteur, above: tuple[str, int], is_blood: bool) -> None:
     """Posts a new solve in the right channel"""
 
     if is_blood:
@@ -73,7 +73,7 @@ async def send_new_solve(channel: TextChannel, chall: ChallengeData, aut: Auteur
     await channel.send(embed=embed)
 
 
-async def send_new_challenge(channel: TextChannel, chall: ChallengeData) -> None:
+async def send_new_challenge(channel: TextChannel, chall: Challenge) -> None:
     """Posts a new challenge in the right channel"""
 
     ping = f'<@&{Color.PING_ROLE_ROOTME}>'
@@ -131,6 +131,16 @@ async def cant_find_challenge(channel: TextChannel, data: str) -> None:
     embed = discord.Embed(color=Color.ERROR_RED.value, title=message_title, description=message)
 
     await channel.send(embed=embed)
+
+async def cant_find_scoreboard(channel: TextChannel, data: str) -> None:
+    
+    message_title = 'Error'
+    message = f'Cant find scoreboard {data} :frowning:'
+
+    embed = discord.Embed(color=Color.ERROR_RED.value, title=message_title, description=message)
+
+    await channel.send(embed=embed)
+
 
 
 async def removed_ok(channel: TextChannel, username: str) -> None:
@@ -289,6 +299,12 @@ async def add_scoreboard(channel: TextChannel, sc: Scoreboard) -> None:
     embed = discord.Embed(color=Color.SUCCESS_GREEN.value, title=message_title, description=message)
     await channel.send(embed=embed)
 
+async def manage_user(channel: TextChannel, db_manager: DatabaseManager, auteur: Auteur) -> None:
+    message_title = 'Edit user'
+    message = f'Choose the scoreboards {auteur.username} is part of'
+    view = ScoreboardView(db_manager, auteur)
+    embed = discord.Embed(color=Color.SCOREBOARD_WHITE.value, title=message_title, description=message)
+    await channel.send(embed=embed, view=view)
 
 
 

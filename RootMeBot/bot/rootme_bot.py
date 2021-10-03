@@ -233,6 +233,22 @@ class RootMeBot():
             await utils.add_scoreboard(context.message.channel, scoreboard)
 
 
+        @self.bot.command(description='Deletes a scoreboard')
+        @commands.check(self.after_init)
+        @self.check_channel()
+        async def remove_scoreboard(context: Context) -> None:
+            """<scoreboard name>"""
+
+            args = ' '.join(self.get_command_args(context))
+            
+            res = await self.database_manager.remove_scoreboard(args)
+            if not res:
+               await utils.cant_find_scoreboard(context.message.channel, args)
+            else:
+                await utils.removed_ok(context.message.channel, args)
+
+
+
 
 
         @self.bot.command(description='Change the lang for the next search')
@@ -244,7 +260,7 @@ class RootMeBot():
             
             if len(args) < 1:
                 await utils.usage(context.message.channel)
-                return
+                breturn
 
             lang = args[0].lower()
 
@@ -298,6 +314,9 @@ class RootMeBot():
             try:
                 search_id = int(search)
                 auteur = await self.database_manager.get_user_from_db(search_id)
+                if not auteur:
+                    await utils.cant_find_user(context.message.channel, search)
+                    return
 
             except ValueError:
                 auteurs = await self.database_manager.search_user_from_db(search)
@@ -323,6 +342,43 @@ class RootMeBot():
 
             await utils.profile(context.message.channel, auteur, stats_glob, image_profile)
 
+
+
+        @self.bot.command(description='Shows the view to manage a user')
+        @commands.check(self.after_init)
+        @self.check_channel()
+        async def manage_user(context: Context) -> None:
+            """<username>"""
+            args = self.get_command_args(context)
+            if len(args) < 1:
+                await utils.usage(context.message.channel)
+                return
+
+            search = str(' '.join(args))
+            
+            try:
+                search_id = int(search)
+                auteur = await self.database_manager.get_user_from_db(search_id)
+                if not auteur:
+                    await utils.cant_find_user(context.message.channel, search)
+                    return
+
+            except ValueError:
+                auteurs = await self.database_manager.search_user_from_db(search)
+
+                if len(auteurs) == 0:
+                    await utils.cant_find_user(context.message.channel, search)
+                    return
+                elif len(auteurs) > 1:
+                    await utils.multiple_users(context.message.channel, auteurs)
+                    return
+                else:
+                    auteur = auteurs[0]
+            
+
+
+                await utils.manage_user(context.message.channel, self.database_manager, auteur)
+            
 
 
 

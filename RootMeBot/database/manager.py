@@ -134,7 +134,7 @@ class DatabaseManager():
             if aut:
                 u = aut.username
                 aut.validations = []
-                aut.delete()
+                session.delete(aut)
                 return u
             else:
                 return 
@@ -302,7 +302,7 @@ class DatabaseManager():
             sc = session.query(Scoreboard).filter(Scoreboard.name == name).one_or_none()
         return sc
 
-    async def get_all_scoreboards(self) -> list[Scoreboard]:
+    def get_all_scoreboards(self) -> list[Scoreboard]:
         """Retreives all scoreboards"""
         with self.Session.begin() as session:
             sc = session.query(Scoreboard).all()
@@ -315,12 +315,25 @@ class DatabaseManager():
             session.add(scoreboard)
         return scoreboard
 
-    async def add_to_scoreboard(self, user_id: int, scoreboard_id: int) -> bool:
+    async def remove_scoreboard(self, name: str) -> bool:
+        """Removes a scoreboard"""
+
+        with self.Session.begin() as session:
+            scoreboard = session.query(Scoreboard).filter(Scoreboard.name == name).one_or_none()
+            if not scoreboard:
+                res = False
+            else:
+                res = True
+                scoreboard.users = []
+                session.delete(scoreboard)
+        return res
+
+    async def add_to_scoreboard(self, user_id: int, scoreboard_name: str) -> bool:
         """Adds a user to a scoreboard"""
 
         with self.Session.begin() as session:
             aut = session.query(Auteur).filter(Auteur.idx == user_id).one_or_none()
-            sc = session.query(Scoreboard).filter(Scoreboard.idx == scoreboard_id).one_or_none()
+            sc = session.query(Scoreboard).filter(Scoreboard.name == scoreboard_name).one_or_none()
             if not aut or not sc:
                 res = False
             else:
@@ -329,19 +342,21 @@ class DatabaseManager():
 
         return True
 
-    async def remove_from_scoreboard(self, user_id: int, scoreboard_id: int) -> bool:
+    async def remove_from_scoreboard(self, user_id: int, scoreboard_name: str) -> bool:
         """Remove a user from a scoreboard"""
 
         with self.Session.begin() as session:
             aut = session.query(Auteur).filter(Auteur.idx == user_id).one_or_none()
-            sc = session.query(Scoreboard).filter(Scoreboard.idx == scoreboard_id).one_or_none()
+            sc = session.query(Scoreboard).filter(Scoreboard.name == scoreboard_name).one_or_none()
             if not aut or not sc:
                 res = False
             else:
-                aut.scoreboards.remove(sc)
-                res = True
-
-        return True
+                if sc.name in [i.name for i in aut.scoreboards]:
+                    aut.scoreboards.remove(sc)
+                    res = True
+                else:
+                    res = False
+        return res
 
 
 
