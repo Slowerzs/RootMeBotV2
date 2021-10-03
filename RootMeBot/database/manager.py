@@ -302,7 +302,11 @@ class DatabaseManager():
             sc = session.query(Scoreboard).filter(Scoreboard.name == name).one_or_none()
         return sc
 
-
+    async def get_all_scoreboards(self) -> list[Scoreboard]:
+        """Retreives all scoreboards"""
+        with self.Session.begin() as session:
+            sc = session.query(Scoreboard).all()
+        return sc
 
     async def create_scoreboard(self, name: str) -> Scoreboard:
         """Creates a scoreboard """
@@ -310,5 +314,41 @@ class DatabaseManager():
             scoreboard = Scoreboard(name=name)
             session.add(scoreboard)
         return scoreboard
+
+    async def add_to_scoreboard(self, user_id: int, scoreboard_id: int) -> bool:
+        """Adds a user to a scoreboard"""
+
+        with self.Session.begin() as session:
+            aut = session.query(Auteur).filter(Auteur.idx == user_id).one_or_none()
+            sc = session.query(Scoreboard).filter(Scoreboard.idx == scoreboard_id).one_or_none()
+            if not aut or not sc:
+                res = False
+            else:
+                aut.scoreboards.append(sc)
+                res = True
+
+        return True
+
+    async def remove_from_scoreboard(self, user_id: int, scoreboard_id: int) -> bool:
+        """Remove a user from a scoreboard"""
+
+        with self.Session.begin() as session:
+            aut = session.query(Auteur).filter(Auteur.idx == user_id).one_or_none()
+            sc = session.query(Scoreboard).filter(Scoreboard.idx == scoreboard_id).one_or_none()
+            if not aut or not sc:
+                res = False
+            else:
+                aut.scoreboards.remove(sc)
+                res = True
+
+        return True
+
+
+
+
+
+
+
+
 
 
