@@ -177,8 +177,12 @@ class RootMeBot():
         @self.check_channel()
         async def scoreboard(context: Context) -> None:
             """ """
-
-            await utils.scoreboard(context.message.channel, self.database_manager)
+            
+            args = self.get_command_args(context)
+            if len(args) < 1:
+                await utils.scoreboard_choice(context.message.channel, self.database_manager)
+                return
+            #await utils.scoreboard(context.message.channel, self.database_manager)
 
         @self.bot.command(description='Add user by ID')
         @commands.check(self.after_init)

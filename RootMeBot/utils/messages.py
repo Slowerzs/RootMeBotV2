@@ -87,23 +87,33 @@ async def send_new_challenge(channel: TextChannel, chall: Challenge) -> None:
     await channel.send(ping, embed=embed)
 
 
-async def scoreboard(channel: TextChannel, database_manager: DatabaseManager) -> None:
+async def scoreboard_choice(channel: TextChannel, db_manager: DatabaseManager) -> None:
+    view = ScoreboardView(channel, db_manager)
+    await channel.send('Choose which scoreboard: ', view=view)
 
-   users = await database_manager.get_all_users_from_db()
 
-   if not users:
-       embed = discord.Embed(color=0xff0000, title='Error', description='No users in database :frowning:')
+async def scoreboard(channel: TextChannel, database_manager: DatabaseManager, name: str) -> None:
 
-   else:
+    sc = await database_manager.get_scoreboard(name)
+    if not sc:
+        await utils.cant_find_scoreboard(channel, name)
+        return
+
+    users = sc.users
+
+    if not users:
+       embed = discord.Embed(color=0xff0000, title='Error', description='No users in scoreboard {sc.name} :frowning:')
+
+    else:
        users.sort(key=lambda x: x.score, reverse=True)
-       message_title = f'Scoreboard'
+       message_title = f'Scoreboard {sc.name}'
        message = ''
        for user in users:
            message += f' • • • {user.username} --> {user.score} \n'
 
        embed = discord.Embed(color=Color.SCOREBOARD_WHITE.value, title=message_title, description=message)
 
-   await channel.send(embed=embed)
+    await channel.send(embed=embed)
 
 
 async def added_ok(channel: TextChannel, username: str) -> None:
@@ -302,7 +312,7 @@ async def add_scoreboard(channel: TextChannel, sc: Scoreboard) -> None:
 async def manage_user(channel: TextChannel, db_manager: DatabaseManager, auteur: Auteur) -> None:
     message_title = 'Edit user'
     message = f'Choose the scoreboards {auteur.username} is part of'
-    view = ScoreboardView(db_manager, auteur)
+    view = ManageView(db_manager, auteur)
     embed = discord.Embed(color=Color.SCOREBOARD_WHITE.value, title=message_title, description=message)
     await channel.send(embed=embed, view=view)
 
