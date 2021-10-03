@@ -1,6 +1,6 @@
 asyncio
 aiohttp
-discord
+git+https://github.com/Rapptz/discord.py
 sqlalchemy
 python-dotenv
 
