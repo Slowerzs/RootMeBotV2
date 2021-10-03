@@ -98,7 +98,7 @@ class DatabaseManager():
 
 
         for chall in new_challenges:
-            await asyncio.sleep(0.90)
+            await asyncio.sleep(1.00)
             await get_new_chall(chall.idx)
 
     
@@ -271,7 +271,7 @@ class DatabaseManager():
             for aut in session.query(Auteur).all():
                 print(aut)
                 await self.update_user(aut.idx)
-                await asyncio.sleep(0.90)
+                await asyncio.sleep(1.00)
 
     async def get_stats(self) -> dict:
         """Queries db for how many chall per category"""
