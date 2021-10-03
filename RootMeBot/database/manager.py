@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 import database.models.base_model as db
 from database.models.challenge_model import Challenge
 from database.models.auteur_model import Auteur
+from database.models.scoreboard_model import Scoreboard
 from database.models.base_model import Base
 
 from classes.challenge import ChallengeData, ChallengeShort
@@ -293,8 +294,21 @@ class DatabaseManager():
 
 
         return stats
-    
+
+    async def get_scoreboard(self, name: str) -> Scoreboard:
+        """Retreives a scoreboard from db by name"""
+
+        with self.Session.begin() as session:
+            sc = session.query(Scoreboard).filter(Scoreboard.name == name).one_or_none()
+        return sc
 
 
+
+    async def create_scoreboard(self, name: str) -> Scoreboard:
+        """Creates a scoreboard """
+        with self.Session.begin() as session:
+            scoreboard = Scoreboard(name=name)
+            session.add(scoreboard)
+        return scoreboard
 
 

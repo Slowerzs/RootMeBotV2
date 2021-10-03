@@ -10,6 +10,7 @@ from discord.channel import TextChannel
 from classes.enums import Color, Stats
 
 from database.models.auteur_model import Auteur
+from database.models.scoreboard_model import Scoreboard
 from database.models.challenge_model import Challenge
 
 Auteurs = list[Auteur]
@@ -100,7 +101,7 @@ async def scoreboard(channel: TextChannel, database_manager: DatabaseManager) ->
        for user in users:
            message += f' • • • {user.username} --> {user.score} \n'
 
-       embed = discord.Embed(color=Color.SCOREBOARD_WHITE, title=message_title, description=message)
+       embed = discord.Embed(color=Color.SCOREBOARD_WHITE.value, title=message_title, description=message)
 
    await channel.send(embed=embed)
 
@@ -281,6 +282,12 @@ async def unknown_lang(channel: TextChannel, lang: str) -> None:
     embed = discord.Embed(color=Color.ERROR_RED.value, title=message_title, description=message)
     await channel.send(embed=embed)
 
+
+async def add_scoreboard(channel: TextChannel, sc: Scoreboard) -> None:
+    message_title = f"Scoreboard Created"
+    message = f'Scoreboard {sc.name} was successfully created (id {sc.idx}) :+1:'
+    embed = discord.Embed(color=Color.SUCCESS_GREEN.value, title=message_title, description=message)
+    await channel.send(embed=embed)
 
 
 

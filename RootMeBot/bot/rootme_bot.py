@@ -138,6 +138,7 @@ class RootMeBot():
                         print(f'RootMeBot is starting on the following server: "{server.name}" !')
 
 
+
         @self.bot.command(description='Remove user by ID', pass_context=True)
         @commands.check(self.after_init)
         @self.check_channel()
@@ -215,6 +216,23 @@ class RootMeBot():
                 await utils.added_ok(context.message.channel, aut.username)
             else:
                 await utils.cant_find_user(context.message.channel, username)
+
+
+        @self.bot.command(description='Create a new scoreboard')
+        @commands.check(self.after_init)
+        @self.check_channel()
+        async def add_scoreboard(context: Context) -> None:
+            """<scoreboard name>"""
+
+            args = ' '.join(self.get_command_args(context))
+            
+            scoreboard = await self.database_manager.get_scoreboard(args)
+            if not scoreboard:
+                scoreboard = await self.database_manager.create_scoreboard(args)
+
+            await utils.add_scoreboard(context.message.channel, scoreboard)
+
+
 
 
         @self.bot.command(description='Change the lang for the next search')
