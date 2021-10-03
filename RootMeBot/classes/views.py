@@ -12,7 +12,10 @@ import utils.messages as utils
 class ManageButton(discord.ui.Button):
     def __init__(self, sc: Scoreboard, y: int, status: bool):
         self.sc = sc
-        if status:
+        
+        if sc.name == 'global':
+            super().__init__(style=discord.ButtonStyle.success, label=sc.name, row=y, disabled=True)
+        elif status:
             super().__init__(style=discord.ButtonStyle.success, label=sc.name, row=y)
         else:
             super().__init__(style=discord.ButtonStyle.secondary, label=sc.name, row=y)

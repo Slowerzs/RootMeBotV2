@@ -35,7 +35,7 @@ class DatabaseManager():
         Base.metadata.create_all(bind=self.engine)
        
         self.Session = sessionmaker(self.engine, expire_on_commit=False)
-        
+
 
     def count_challenges(self) -> int:
         """Counts number of challenges, used for initialization"""
@@ -196,6 +196,7 @@ class DatabaseManager():
             
         with self.Session.begin() as session:
             auteur.validations = proper_validations
+            await self.add_to_scoreboard(auteur.idx, 'global')
             session.add(session.merge(auteur))
 
         return auteur
@@ -311,8 +312,10 @@ class DatabaseManager():
     async def create_scoreboard(self, name: str) -> Scoreboard:
         """Creates a scoreboard """
         with self.Session.begin() as session:
-            scoreboard = Scoreboard(name=name)
-            session.add(scoreboard)
+            scoreboard = await self.get_scoreboard(name)
+            if not scoreboard:
+                scoreboard = Scoreboard(name=name)
+                session.add(scoreboard)
         return scoreboard
 
     async def remove_scoreboard(self, name: str) -> bool:

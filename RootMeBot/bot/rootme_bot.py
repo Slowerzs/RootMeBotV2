@@ -64,6 +64,8 @@ class RootMeBot():
         print("Starting...")
         channel = self.bot.get_channel(self.BOT_CHANNEL)
 
+        await self.database_manager.create_scoreboard('global')
+
         if self.database_manager.count_challenges() < 300:
 
             await utils.init_start(channel)
@@ -182,7 +184,9 @@ class RootMeBot():
             if len(args) < 1:
                 await utils.scoreboard_choice(context.message.channel, self.database_manager)
                 return
-            #await utils.scoreboard(context.message.channel, self.database_manager)
+            else:
+                name = ' '.join(args)
+                await utils.scoreboard(context.message.channel, self.database_manager, name)
 
         @self.bot.command(description='Add user by ID')
         @commands.check(self.after_init)
@@ -428,6 +432,7 @@ class RootMeBot():
         self.BOT_CHANNEL = BOT_CHANNEL
         print("START")
         self.catch()
+
         self.bot.loop.create_task(self.init_db())
         self.check_solves = self.bot.loop.create_task(self.cron_check_solves())
         self.check_challs = self.bot.loop.create_task(self.cron_check_challs())

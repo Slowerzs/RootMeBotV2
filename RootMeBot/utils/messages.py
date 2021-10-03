@@ -7,11 +7,13 @@ from database.manager import DatabaseManager
 from discord.channel import TextChannel
 
 from classes.enums import Color, Stats
-from classes.views import ScoreboardView
+from classes.views import ManageView, ScoreboardView
 
 from database.models.auteur_model import Auteur
 from database.models.scoreboard_model import Scoreboard
 from database.models.challenge_model import Challenge
+
+import utils.messages as utils
 
 Auteurs = list[Auteur]
 Challenges = list[Challenge]
@@ -102,7 +104,7 @@ async def scoreboard(channel: TextChannel, database_manager: DatabaseManager, na
     users = sc.users
 
     if not users:
-       embed = discord.Embed(color=0xff0000, title='Error', description='No users in scoreboard {sc.name} :frowning:')
+       embed = discord.Embed(color=0xff0000, title='Error', description=f'No users in scoreboard {sc.name} :frowning:')
 
     else:
        users.sort(key=lambda x: x.score, reverse=True)
