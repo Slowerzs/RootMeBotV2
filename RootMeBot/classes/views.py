@@ -117,7 +117,7 @@ class MultipleUserButton(discord.ui.Select):
     def __init__(self, users: list[Auteur]):
 
         options = [
-            discord.SelectOption(label=escape_markdown(i.username), description=f'{i.score} points - {i.rank}', value=str(i.idx)) for i in users
+                discord.SelectOption(label=escape_markdown(i.username), description=f'{i.score} points - ID {i.idx}', value=str(i.idx)) for i in users
         ]
 
         super().__init__(placeholder='Which user :', min_values=1, max_values=1, options=options)
