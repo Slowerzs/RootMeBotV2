@@ -1,5 +1,8 @@
 import discord
 from discord.channel import TextChannel
+from discord.utils import escape_markdown
+
+from html import unescape
 
 from database.models.scoreboard_model import Scoreboard
 from database.models.auteur_model import Auteur
@@ -64,7 +67,7 @@ class DropdownScoreboard(discord.ui.Select):
     def __init__(self, scoreboards: list[Scoreboard]):
 
         options = [
-            discord.SelectOption(label=i.name, description='') for i in scoreboards
+            discord.SelectOption(label=escape_markdown(i.name), description='') for i in scoreboards
         ]
 
         super().__init__(placeholder='Choose the scoreboard', min_values=1, max_values=1, options=options)
@@ -90,7 +93,7 @@ class MultipleChallButton(discord.ui.Select):
     def __init__(self, challenges: list[Challenge]):
 
         options = [
-            discord.SelectOption(label=i.title, description=f'{i.category} - {i.score} points - {i.difficulty}') for i in challenges
+            discord.SelectOption(label=unescape(i.title), description=f'{i.category} - {i.score} points - {i.difficulty}') for i in challenges
         ]
 
         super().__init__(placeholder='Choose the challenge', min_values=1, max_values=1, options=options)
