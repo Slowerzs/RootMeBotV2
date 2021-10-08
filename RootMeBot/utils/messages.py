@@ -9,7 +9,7 @@ from database.manager import DatabaseManager
 from discord.channel import TextChannel
 
 from classes.enums import Color, Stats
-from classes.views import ManageView, ScoreboardView, MultipleChallFoundView
+from classes.views import ManageView, ScoreboardView, MultipleChallFoundView, MultipleUserFoundView
 
 from database.models.auteur_model import Auteur
 from database.models.scoreboard_model import Scoreboard
@@ -166,8 +166,15 @@ async def removed_ok(channel: TextChannel, username: str) -> None:
     await channel.send(embed=embed)
 
 
+async def possible_users(channel: TextChannel, db_manager: DatabaseManager, auteurs: Auteurs) -> None:
 
-async def possible_users(channel: TextChannel, auteurs: Auteurs) -> None:
+    message = f'Multiple users found :'
+
+    view = MultipleUserFoundView(channel, db_manager, auteurs) 
+
+    await channel.send(message, view=view)
+
+async def many_users(channel: TextChannel, auteurs: Auteurs) -> None:
 
     message_title = 'Possibles users'
     
@@ -190,6 +197,23 @@ async def who_solved(channel: TextChannel, chall: Challenge) -> None:
     embed = discord.Embed(color=Color.INFO_BLUE.value, title=message_title, description=message)
     await channel.send(embed=embed)
 
+
+async def many_challenges(channel: TextChannel, challenges: Challenges) -> None:
+    
+    message_title = f'Multiple challenges found :thinking:'
+
+    embed = discord.Embed(color=Color.ERROR_RED.value, title=message_title)
+
+    first_column = ''
+    second_column = ''
+    for chall in challenges:
+        first_column += f'\n{unescape(chall.title)}'
+        second_column += f'\n{chall.idx}'
+
+    embed.add_field(name=f'Title', value=first_column, inline=True)
+    embed.add_field(name=f'ID', value=second_column, inline=True)
+
+    await channel.send(embed=embed)
 
 async def multiple_challenges(channel: TextChannel, challenges: Challenges) -> None:
 

@@ -156,9 +156,9 @@ class RootMeBot():
             try:
                 idx = int(args)
 
-                aut = await self.database_manager.remove_user_from_db(idx)  
+                username = await self.database_manager.remove_user_from_db(idx)  
                 if aut:
-                    await utils.removed_ok(context.message.channel, aut.username)
+                    await utils.removed_ok(context.message.channel, username)
                 else:
                     #Case where username is full numbers
                     args = str(args)
@@ -217,8 +217,12 @@ class RootMeBot():
             """<username>"""
             username = ' '.join(self.get_command_args(context))
             auteurs = await self.database_manager.search_user(username)
-            if len(auteurs) > 1:
-                await utils.possible_users(context.message.channel, auteurs)
+            if len(auteurs) > 25:
+                await utils.many_users(context.message.channe, auteurs)
+
+            elif len(auteurs) > 1:
+                await utils.possible_users(context.message.channel, self.database_manager, auteurs)
+
             elif len(auteurs) == 1:
                 aut = await self.database_manager.add_user(auteurs[0].idx)
                 await utils.added_ok(context.message.channel, aut.username)
@@ -416,7 +420,10 @@ class RootMeBot():
             except ValueError:
                 #Search by name
                 results = await self.database_manager.search_challenge_from_db(search)
-                if len(results) > 1:
+                if len(results) > 25:
+                    await utils.many_challenges(context.message.channel, results)
+
+                elif len(results) > 1:
                     await utils.multiple_challenges(context.message.channel, results)
                 
                 elif len(results) == 1:

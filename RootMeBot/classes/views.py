@@ -93,12 +93,12 @@ class MultipleChallButton(discord.ui.Select):
     def __init__(self, challenges: list[Challenge]):
 
         options = [
-            discord.SelectOption(label=unescape(i.title), description=f'{i.category} - {i.score} points - {i.difficulty}') for i in challenges
+            discord.SelectOption(label=unescape(i.title), description=f'{i.category} - {i.score} points - {i.difficulty}', value=str(i.idx)) for i in challenges
         ]
 
         super().__init__(placeholder='Choose the challenge', min_values=1, max_values=1, options=options)
 
-    async def callback(self, interaction: discord.Interaction): 
+    async def callback(self, interaction: discord.Interaction):
         await self.view.show_challenge(self.values[0])
 
 class MultipleChallFoundView(discord.ui.View):
@@ -109,11 +109,36 @@ class MultipleChallFoundView(discord.ui.View):
 
         self.add_item(MultipleChallButton(challenges))
 
-    async def show_challenge(self, name: str):
-        chall = next(filter(lambda x: x.title == name, self.challenges))
+    async def show_challenge(self, idx: str):
+        chall = next(filter(lambda x: x.idx == int(idx), self.challenges))
         await utils.who_solved(self.channel, chall)
 
+class MultipleUserButton(discord.ui.Select):
+    def __init__(self, users: list[Auteur]):
 
+        options = [
+            discord.SelectOption(label=escape_markdown(i.username), description=f'{i.score} points - {i.rank}', value=str(i.idx)) for i in users
+        ]
+
+        super().__init__(placeholder='Which user :', min_values=1, max_values=1, options=options)
+
+    async def callback(self, interaction: discord.Interaction): 
+        await self.view.add_user(self.values[0])
+
+class MultipleUserFoundView(discord.ui.View):
+    def __init__(self, channel: TextChannel, db_manager: DatabaseManager, users: list[Auteur]):
+        super().__init__()
+        self.channel = channel
+        self.database_manager = db_manager
+        self.users = users
+
+        self.add_item(MultipleUserButton(users))
+
+    async def add_user(self, idx: str):
+        auteur = next(filter(lambda x: x.idx == int(idx), self.users))
+        aut = await self.database_manager.add_user(auteur.idx)
+
+        await utils.added_ok(self.channel, aut.username)
 
 
 
