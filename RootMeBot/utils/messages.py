@@ -3,6 +3,8 @@ import aiohttp
 
 from html import unescape
 
+from discord.utils import escape_markdown
+
 from database.manager import DatabaseManager
 from discord.channel import TextChannel
 
@@ -58,7 +60,7 @@ async def send_new_solve(channel: TextChannel, chall: Challenge, aut: Auteur, ab
     else:
         emoji = ':partying_face:'
 
-    message_title = f'New challenge solved by {aut.username} {emoji}'
+    message_title = f'New challenge solved by {escape_markdown(aut.username)} {emoji}'
     
     message = f' • {unescape(chall.title)} ({chall.score} points)'
     message += f'\n • Category: {chall.category}'
@@ -69,7 +71,7 @@ async def send_new_solve(channel: TextChannel, chall: Challenge, aut: Auteur, ab
     embed = discord.Embed(color=Color.NEW_YELLOW.value, title=message_title, description=message)
     
     if above[1]:
-        footer = f'{above[1] - aut.score} points to overtake {above[0]}'
+        footer = f'{above[1] - aut.score} points to overtake {escape_markdown(above[0])}'
         embed.set_footer(text=footer)
 
     await channel.send(embed=embed)
@@ -111,7 +113,7 @@ async def scoreboard(channel: TextChannel, database_manager: DatabaseManager, na
        message_title = f'Scoreboard {sc.name}'
        message = ''
        for user in users:
-           message += f' • • • {user.username} --> {user.score} \n'
+           message += f' • • • {escape_markdown(user.username)} --> {user.score} \n'
 
        embed = discord.Embed(color=Color.SCOREBOARD_WHITE.value, title=message_title, description=message)
 
@@ -121,7 +123,7 @@ async def scoreboard(channel: TextChannel, database_manager: DatabaseManager, na
 async def added_ok(channel: TextChannel, username: str) -> None:
     
     message_title = 'Success'
-    message = f'{username} was succesfully added :+1:'
+    message = f'{escape_markdown(username)} was succesfully added :+1:'
 
     embed = discord.Embed(color=Color.SUCCESS_GREEN.value, title=message_title, description=message)
     await channel.send(embed=embed)
@@ -129,7 +131,7 @@ async def added_ok(channel: TextChannel, username: str) -> None:
 async def cant_find_user(channel: TextChannel, data: str) -> None:
     
     message_title = 'Error'
-    message = f'Cant find user {data} :frowning:'
+    message = f'Cant find user {escape_markdown(data)} :frowning:'
 
     embed = discord.Embed(color=Color.ERROR_RED.value, title=message_title, description=message)
 
@@ -138,7 +140,7 @@ async def cant_find_user(channel: TextChannel, data: str) -> None:
 async def cant_find_challenge(channel: TextChannel, data: str) -> None:
     
     message_title = 'Error'
-    message = f'Cant find challenge {data} :frowning:'
+    message = f'Cant find challenge {escape_markdown(data)} :frowning:'
 
     embed = discord.Embed(color=Color.ERROR_RED.value, title=message_title, description=message)
 
@@ -147,7 +149,7 @@ async def cant_find_challenge(channel: TextChannel, data: str) -> None:
 async def cant_find_scoreboard(channel: TextChannel, data: str) -> None:
     
     message_title = 'Error'
-    message = f'Cant find scoreboard {data} :frowning:'
+    message = f'Cant find scoreboard {escape_markdown(data)} :frowning:'
 
     embed = discord.Embed(color=Color.ERROR_RED.value, title=message_title, description=message)
 
@@ -158,7 +160,7 @@ async def cant_find_scoreboard(channel: TextChannel, data: str) -> None:
 async def removed_ok(channel: TextChannel, username: str) -> None:
     
     message_title = 'Success'
-    message = f'{username} was succesfully removed :wave:'
+    message = f'{escape_markdown(username)} was succesfully removed :wave:'
 
     embed = discord.Embed(color=Color.SUCCESS_GREEN.value, title=message_title, description=message)
     await channel.send(embed=embed)
@@ -171,7 +173,7 @@ async def possible_users(channel: TextChannel, auteurs: Auteurs) -> None:
     
     message = ''
     for auteur in auteurs:
-        message += f' • • • {auteur.username}: {auteur.score} points --> ID {auteur.idx}\n'
+        message += f' • • • {escape_markdown(auteur.username)}: {auteur.score} points --> ID {auteur.idx}\n'
 
     embed = discord.Embed(color=Color.INFO_BLUE.value, title=message_title, description=message)
     await channel.send(embed=embed)
@@ -182,7 +184,7 @@ async def who_solved(channel: TextChannel, chall: Challenge) -> None:
     message_title = f'Solvers of {unescape(chall.title)} :sunglasses:'
     message = ''
     for auteur in chall.solvers:
-        message += f' • • • {auteur.username}\n' 
+        message += f' • • • {escape_markdown(auteur.username)}\n' 
 
 
     embed = discord.Embed(color=Color.INFO_BLUE.value, title=message_title, description=message)
@@ -208,7 +210,7 @@ async def multiple_users(channel: TextChannel, auteurs: Auteurs) -> None:
     embed = discord.Embed(color=Color.ERROR_RED.value, title=message_title)
     
     for aut in auteurs:
-        first_column += f'\n{aut.username}'
+        first_column += f'\n{escape_markdown(aut.username)}'
         second_column +=  f'\n{aut.score}'
         third_column +=  f'\n{aut.idx}'
 
@@ -291,20 +293,20 @@ async def lang(channel: TextChannel, lang: str) -> None:
 
 async def unknown_lang(channel: TextChannel, lang: str) -> None:
     message_title = f"Unknown lang"
-    message = f'Can\'t find lang {lang}. Available languages are : "en", "fr", "de", "es", "ru"'
+    message = f'Can\'t find lang {escape_markdown(lang)}. Available languages are : "en", "fr", "de", "es", "ru"'
     embed = discord.Embed(color=Color.ERROR_RED.value, title=message_title, description=message)
     await channel.send(embed=embed)
 
 
 async def add_scoreboard(channel: TextChannel, sc: Scoreboard) -> None:
     message_title = f"Scoreboard Created"
-    message = f'Scoreboard {sc.name} was successfully created :+1:'
+    message = f'Scoreboard {escape_markdown(sc.name)} was successfully created :+1:'
     embed = discord.Embed(color=Color.SUCCESS_GREEN.value, title=message_title, description=message)
     await channel.send(embed=embed)
 
 async def manage_user(channel: TextChannel, db_manager: DatabaseManager, auteur: Auteur) -> None:
     message_title = 'Edit user'
-    message = f'Choose the scoreboards {auteur.username} is part of'
+    message = f'Choose the scoreboards {escape_markdown(auteur.username)} is part of'
     view = ManageView(db_manager, auteur)
     embed = discord.Embed(color=Color.SCOREBOARD_WHITE.value, title=message_title, description=message)
     await channel.send(embed=embed, view=view)
