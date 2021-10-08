@@ -7,7 +7,7 @@ from database.manager import DatabaseManager
 from discord.channel import TextChannel
 
 from classes.enums import Color, Stats
-from classes.views import ManageView, ScoreboardView
+from classes.views import ManageView, ScoreboardView, MultipleChallFoundView
 
 from database.models.auteur_model import Auteur
 from database.models.scoreboard_model import Scoreboard
@@ -191,20 +191,11 @@ async def who_solved(channel: TextChannel, chall: Challenge) -> None:
 
 async def multiple_challenges(channel: TextChannel, challenges: Challenges) -> None:
 
-    message_title = f'Multiple challenges found :thinking:'
+    message = f'Multiple challenges found :'
 
-    embed = discord.Embed(color=Color.ERROR_RED.value, title=message_title)
-    
-    first_column = ''
-    second_column = ''
-    for chall in challenges:
-        first_column += f'\n{unescape(chall.title)}'
-        second_column += f'\n{chall.idx}'
+    view = MultipleChallFoundView(channel, challenges) 
 
-    embed.add_field(name=f'Title', value=first_column, inline=True)
-    embed.add_field(name=f'ID', value=second_column, inline=True)
-
-    await channel.send(embed=embed)
+    await channel.send(message, view=view)
 
 
 

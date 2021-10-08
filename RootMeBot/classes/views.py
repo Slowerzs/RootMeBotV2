@@ -3,6 +3,7 @@ from discord.channel import TextChannel
 
 from database.models.scoreboard_model import Scoreboard
 from database.models.auteur_model import Auteur
+from database.models.challenge_model import Challenge
 
 from database.manager import DatabaseManager
 
@@ -85,6 +86,29 @@ class ScoreboardView(discord.ui.View):
         await utils.scoreboard(self.channel, self.database_manager, name)
 
 
+class MultipleChallButton(discord.ui.Select):
+    def __init__(self, challenges: list[Challenge]):
+
+        options = [
+            discord.SelectOption(label=i.title, description=f'{i.category} - {i.score} points - {i.difficulty}') for i in challenges
+        ]
+
+        super().__init__(placeholder='Choose the challenge', min_values=1, max_values=1, options=options)
+
+    async def callback(self, interaction: discord.Interaction): 
+        await self.view.show_challenge(self.values[0])
+
+class MultipleChallFoundView(discord.ui.View):
+    def __init__(self, channel: TextChannel, challenges: list[Challenge]):
+        super().__init__()
+        self.channel = channel
+        self.challenges = challenges
+
+        self.add_item(MultipleChallButton(challenges))
+
+    async def show_challenge(self, name: str):
+        chall = next(filter(lambda x: x.title == name, self.challenges))
+        await utils.who_solved(self.channel, chall)
 
 
 
