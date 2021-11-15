@@ -131,7 +131,6 @@ class RootMeBot():
         while True:
 
             await self.database_manager.update_users()
-            await asyncio.sleep(1)
 
     def catch(self):
         @self.bot.event
@@ -441,6 +440,7 @@ class RootMeBot():
         self.catch()
 
         self.bot.loop.create_task(self.init_db())
+        self.worker = self.bot.loop.create_task(self.database_manager.rootme_api.worker())
         self.check_solves = self.bot.loop.create_task(self.cron_check_solves())
         self.check_challs = self.bot.loop.create_task(self.cron_check_challs())
         self.bot.loop.create_task(self.cron_display())

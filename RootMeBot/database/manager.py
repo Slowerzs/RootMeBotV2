@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 import database.models.base_model as db
 from database.models.challenge_model import Challenge
 from database.models.auteur_model import Auteur
+from database.models.validation_model import Validation
 from database.models.scoreboard_model import Scoreboard
 from database.models.base_model import Base
 
@@ -53,6 +54,7 @@ class DatabaseManager():
             return None
 
         with self.Session.begin() as session:
+            #print(challenge)
             session.add(challenge)#probably need to consider that we already have it ?
 
         return challenge
@@ -66,16 +68,15 @@ class DatabaseManager():
 
         
     async def update_challenges(self, init=False) -> None:
-        """Retreives all challenges
-        For all new challenges (not """
+        """Retreives all challenges"""
 
+        print("Updating all challenges...")
 
         with self.Session.begin() as session:
             old_challs = session.query(Challenge).all()
             old_ids = [c.idx for c in old_challs]
             all_challenges = await self.rootme_api.fetch_all_challenges()    
             new_challenges = [new_chall for new_chall in all_challenges if new_chall.idx not in old_ids]
-
 
 
         async def get_new_chall(idx: int):
@@ -98,7 +99,6 @@ class DatabaseManager():
 
 
         for chall in new_challenges:
-            await asyncio.sleep(1.00)
             await get_new_chall(chall.idx)
 
     
@@ -179,25 +179,29 @@ class DatabaseManager():
     
             proper_validations = []
             for validation in auteur.validations:
+                #print(validation)
                 #Check if we have all the challenges in our db
-                db_chall = await self.get_challenge_from_db(validation.idx)
+                db_chall = await self.get_challenge_from_db(validation.challenge_id)
 
                 if db_chall:
                     #We already have
-                    proper_validations.append(db_chall)
+
+                    v = Validation(date=validation.date, challenge_id=db_chall.idx, auteur_id=auteur.idx)
+                    proper_validations.append(v)
+
+
                 else:
                     #We don't have the challenge, add it to db, then to validations
-                    chall = await self.add_challenge_to_db(validation.idx)
+                    chall = await self.add_challenge_to_db(validation.challenge_id)
                     if chall:
-                        proper_validations.append(chall)
+                        v = Validation(date=validation.date, challenge_id=chall.idx, auteur_id=auteur.idx)
+                        proper_validations.append(v)
 
-            auteur.validations = []
-
-            
         with self.Session.begin() as session:
             auteur.validations = proper_validations
+            auteur = session.merge(auteur)
             await self.add_to_scoreboard(auteur.idx, 'global')
-            session.add(session.merge(auteur))
+            session.add(auteur)
 
         return auteur
 
@@ -210,18 +214,23 @@ class DatabaseManager():
         with self.Session.begin() as session: 
             old_auteur = await self.get_user_from_db(idx)
 
+            old_auteur = session.merge(old_auteur)
+
+
             full_auteur = await self.retreive_user(idx)
             if not full_auteur:
                 return
+            
+            full_auteur = session.merge(full_auteur)
 
-
-            for validation in full_auteur.validations:
-                if validation.idx not in [i.idx for i in old_auteur.validations]:
+            for validation in full_auteur.validations_auteur:
+                #print(validation)
+                if validation.challenge_id not in [i.challenge.idx for i in old_auteur.validations_auteur]:
                     #Send notification
-                    new_solves.append((full_auteur, validation))
+                    new_solves.append(validation)
 
             for solve in new_solves:
-                res = session.query(Auteur.username, Auteur.score).filter(Auteur.score > solve[0].score).order_by(Auteur.score.asc()).limit(1).one_or_none()
+                res = session.query(Auteur.username, Auteur.score).filter(Auteur.score > solve.solver.score).order_by(Auteur.score.asc()).limit(1).one_or_none()
                 if res:
                     user_above, user_score = res
                 else:
@@ -229,7 +238,9 @@ class DatabaseManager():
                     user_above, user_score = ("", 0)
                 above = (user_above, user_score)
 
-                if solve[1]:
+                solve = session.merge(solve)
+
+                if solve.challenge:
                     #Premium challenge are None, we can't notify them :(
                     self.notification_manager.add_solve_to_queue(solve, above)
 
@@ -269,16 +280,15 @@ class DatabaseManager():
 
         with self.Session.begin() as session:
             for aut in session.query(Auteur).all():
-                print(aut)
+                #print(aut)
                 await self.update_user(aut.idx)
-                await asyncio.sleep(1.00)
 
     async def get_stats(self) -> dict:
         """Queries db for how many chall per category"""
         
         with self.Session.begin() as session:
             res = session.query(Challenge.category, func.count(Challenge.idx)).group_by(Challenge.category).all()
-            print(res)
+            #print(res)
             stats = {
                 Stats.APP_SCRIPT: next(x[1] for x in res if x[0] == 'App - Script'),
                 Stats.APP_SYSTEM: next(x[1] for x in res if x[0] == 'App - Système'),

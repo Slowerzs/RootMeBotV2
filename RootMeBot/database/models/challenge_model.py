@@ -3,11 +3,6 @@ from sqlalchemy.orm import relationship, backref
 from database.models.base_model import *
 from database.models.auteur_model import Auteur
 
-association_table = Table('association_auteur_challenge', Base.metadata,
-        Column('challenge_id', ForeignKey('challenges.idx'), primary_key = True),
-        Column('auteur_id', ForeignKey('auteurs.idx'), primary_key = True)
-    )
-
 class Challenge(Base):
 
     __tablename__ = 'challenges'
@@ -18,12 +13,7 @@ class Challenge(Base):
     score = Column(Integer)
     difficulty = Column(Text)
     date = Column(DateTime)
-    validations = Column(Text)
-    solvers = relationship("Auteur",
-            secondary = association_table,
-            backref=backref("validations", lazy='subquery'),
-            lazy="subquery"
-    )
+    validations = Column(Integer)
 
     def __repr__(self) -> str:
         return f"Challenge {self.title}: {self.category} [{self.score}]"

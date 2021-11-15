@@ -30,7 +30,7 @@ class AuteurData():
 
 
 	def __str__(self) -> str:
-		return f"User {self.username}-{self.idx}: {self.score} points [{self.rank}|{len(self.validations)}]"
+		return f"User {self.username}-{self.idx}: {self.score} points [{self.rank}|{len(self.solves)}]"
 
 
 	

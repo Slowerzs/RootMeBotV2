@@ -3,6 +3,7 @@ import time
 import aiohttp
 import json
 import functools
+import uuid
 from datetime import datetime, timedelta
 
 from asyncio.exceptions import TimeoutError
@@ -41,11 +42,65 @@ class ApiRootMe():
         self.connector = aiohttp.TCPConnector(limit=24, ttl_dns_cache=300)
         self.session = aiohttp.ClientSession(connector=self.connector)
         self.lang = DEFAULT_LANG
-        self.timeout = aiohttp.ClientTimeout(total=3)
+        self.timeout = aiohttp.ClientTimeout(total=6)
         self.ban = datetime.now()
 
-    @async_request
-    async def get_user_by_id(self, idx: int, session: aiohttp.ClientSession) -> Auteur:
+        self.queue = asyncio.Queue(maxsize=25)
+
+        self.requests = {}
+
+    async def worker(self):
+        print(f"Starting worker...")
+        while True:
+            
+            check = False
+            
+            url, params, key = await self.queue.get()
+
+            while not check:
+                await asyncio.sleep(4.5)
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] Treating item in queue : {key} -> {url} + {params}")
+                async with self.session.get(url, params=params, cookies=cookies_rootme) as r:
+                    if r.status == 200:
+                        data = await r.json()
+                        check = True
+                    elif r.status == 401:
+                        data = 'PREMIUM'
+                        check = True
+                    else:
+                        print(f'Status : {r.status} - restarting')
+                        await asyncio.sleep(5)
+                        check = False
+
+            self.requests[key]['result'] = data
+            self.requests[key]['event'].set()
+
+            self.queue.task_done()
+
+    async def get(self, url, params):
+        key = uuid.uuid4().hex
+
+        print(f"Request for {url} added to queue -> {key}")
+
+        event = asyncio.Event()
+        self.requests[key] = {}
+        self.requests[key]['event'] = event
+        await self.queue.put((url, params, key))
+        #print(self.queue)
+        await event.wait()
+
+
+        result = self.requests[key]['result']
+        
+        #print(f"Got result for {key}")
+        
+        del self.requests[key]
+
+        return result
+
+
+
+    async def get_user_by_id(self, idx: int) -> Auteur:
         """Retreives an Auteur by id"""
         
         if idx == 0:
@@ -63,42 +118,10 @@ class ApiRootMe():
             str(int(time.time())): str(int(time.time())),
             }
 
-        try:
-            async with session.get(f"{api_base_url}{auteurs_path}/{idx}", params=params, cookies=cookies_rootme, timeout=self.timeout) as r:
-                if r.status == 404:
-                    self.ban = datetime.now() + timedelta(minutes=0, seconds=10)
-                    raise UnknownUser(idx)
-        
-                elif r.status == 200:
-                    user_data = await r.json()
-                    aut = extract_auteur(user_data)
-                    return aut
 
-                elif r.status == 429:
-                    self.ban = datetime.now() + timedelta(minutes=0, seconds=10)
-                    await self.bot.banned()
-
-                elif r.status == 403:
-                    print("Error 403")
-                    self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
-                    await self.bot.banned()
-
-                    return await self.get_user_by_id(idx)
-
-        except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError, ClientOSError) as e:
-            self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
-            self.session = aiohttp.ClientSession(connector=self.connector)
-            await self.bot.banned()
-            print(f"Banned {datetime.now()} + {e}")
-
-        except TimeoutError as e:
-
-            await self.bot.banned()
-            self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
-            print(f"Banned {datetime.now()} + {e}")
-
-            return await self.get_user_by_id(idx)
-
+        user_data = await self.get(f"{api_base_url}{auteurs_path}/{idx}", params)
+        aut = extract_auteur(user_data)
+        return aut
 
     @async_request
     async def search_user_by_name(self, username: str, start: int, session: aiohttp.ClientSession,) -> Auteurs:
@@ -152,15 +175,8 @@ class ApiRootMe():
             print(f"Banned {datetime.now()} + {e}")
             return None 
     
-    @async_request
-    async def fetch_all_challenges(self, session: aiohttp.ClientSession, start=0) -> ChallengeShort:
+    async def fetch_all_challenges(self, start=0) -> ChallengeShort:
         """Retrieves all challenges given a starting number"""
-        if datetime.now() < self.ban:
-            print(self.ban)
-            while datetime.now() < self.ban:
-                await asyncio.sleep(1)
-
-            await self.bot.unbanned()
 
         params = {
             str(int(time.time())): str(int(time.time())),
@@ -169,91 +185,36 @@ class ApiRootMe():
             }
     
         current_challenges = []
-        try:
-            async with session.get(f"{api_base_url}{challenges_path}", params=params, cookies=cookies_rootme, timeout=self.timeout) as r:
-                if r.status == 200:
-                    challenges_data = await r.json()
         
-                    current_challenges += extract_page_challenges(challenges_data)
-                    
-                    if challenges_data[-1]['rel'] == 'next':
-                        return current_challenges + await self.fetch_all_challenges(start=start + (50 - (start % 50)))
-                    else:
-                        return current_challenges
-                elif r.status == 429:
-                    self.ban = datetime.now() + timedelta(minutes=0, seconds=10)
+        if not start:
+            print("Fetching all challenges...")
+        
+        challenges_data = await self.get(f"{api_base_url}{challenges_path}/", params)
 
-                elif r.status == 403:
-                    self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
-                    await self.bot.banned()
-        except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError, ClientOSError) as e:
-            self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
-            self.session = aiohttp.ClientSession(connector=self.connector)
-            await self.bot.banned()
-            print(f"Banned {datetime.now()} + {e}")
-            return current_challenges
-        except TimeoutError as e:
-            
-            await self.bot.banned()
-            self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
-            print(f"Banned {datetime.now()} + {e}")
-            
-            return current_challenges
 
+        #print(challenges_data)
+
+        current_challenges += extract_page_challenges(challenges_data)
+
+        if challenges_data[-1]['rel'] == 'next':
+            return current_challenges + await self.fetch_all_challenges(start=start + (50 - (start % 50)))
+        else:
+            return current_challenges
+        
         return current_challenges
         
     
-    
-    @async_request
-    async def get_challenge_by_id(self, idx: int, session: aiohttp.ClientSession) -> Challenge:
+    async def get_challenge_by_id(self, idx: int) -> Challenge:
         """Retreives all information about a challenge by ID"""
-        if datetime.now() < self.ban:
-            print(self.ban)
-            while datetime.now() < self.ban:
-                await asyncio.sleep(1)
-
-            await self.bot.unbanned()
 
         params = {
             str(int(time.time())): str(int(time.time())),
             'lang': DEFAULT_LANG
             }
-        try:        
-            async with session.get(f"{api_base_url}{challenges_path}/{idx}", params=params, cookies=cookies_rootme, timeout=self.timeout) as r:
-                
-                if r.status == 401:
-                    self.ban = datetime.now() + timedelta(minutes=0, seconds=10)
-                    raise PremiumChallenge(idx)
         
-                elif r.status == 404:
-                    self.ban = datetime.now() + timedelta(minutes=0, seconds=10)
-                    raise UnknownChallenge(idx)
-                
-                elif r.status == 200:
-                    challenge_data = await r.json()
-                    challenge = extract_challenge(challenge_data, idx)
-                    print(challenge)
-                    return challenge
-                elif r.status == 429:
-                    self.ban = datetime.now() + timedelta(minutes=0, seconds=10)
-
-                elif r.status == 403:
-                    self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
-                    await self.bot.banned()
-    
-        except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError, ClientOSError) as e:
-            print(f"Banned {datetime.now()} + {e}")
-            self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
-            self.session = aiohttp.ClientSession(connector=self.connector)
-            await self.bot.banned()
-            return None
-        except TimeoutError as e:
-
-            await self.bot.banned()
-            self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
-            print(f"Banned {datetime.now()} + {e}")
-
-            return await self.get_challenge_by_id(idx)
+        challenge_data = await self.get(f"{api_base_url}{challenges_path}/{idx}", params) 
+        challenge = extract_challenge(challenge_data, idx)
+        return challenge
 
     @async_request
     async def get_image_png(self, idx: int, session: aiohttp.ClientSession) -> str:

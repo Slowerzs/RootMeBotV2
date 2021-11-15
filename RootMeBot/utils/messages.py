@@ -67,6 +67,7 @@ async def send_new_solve(channel: TextChannel, chall: Challenge, aut: Auteur, ab
     message += f'\n • Difficulty: {chall.difficulty}'
     message += f'\n • New score: {aut.score}'
     message += f'\n • Validations: {chall.validations}'
+    message += f'\n • Date: {chall.validations}'
 
     embed = discord.Embed(color=Color.NEW_YELLOW.value, title=message_title, description=message)
     
@@ -80,7 +81,7 @@ async def send_new_solve(channel: TextChannel, chall: Challenge, aut: Auteur, ab
 async def send_new_challenge(channel: TextChannel, chall: Challenge) -> None:
     """Posts a new challenge in the right channel"""
 
-    ping = f'<@&{Color.PING_ROLE_ROOTME}>'
+    ping = f'<@&{Color.PING_ROLE_ROOTME.value}>'
     message_title = f'New Challenge ! :open_mouth:'
 
     message = f' • {unescape(chall.title)} ({chall.score} points)'
@@ -249,17 +250,17 @@ async def profile(channel: TextChannel, auteur: Auteur, stats_glob: list[int], i
     message_title = f'Profile of {auteur.username}'
     
     solves = {
-            Stats.WEB_CLIENT : len([i for i in auteur.validations if i.category == 'Web - Client']),
-            Stats.APP_SCRIPT : len([i for i in auteur.validations if i.category == 'App - Script']),
-            Stats.PROGRAMMING : len([i for i in auteur.validations if i.category == 'Programmation']),
-            Stats.CRACKING : len([i for i in auteur.validations if i.category == 'Cracking']),
-            Stats.NETWORK : len([i for i in auteur.validations if i.category == 'Réseau']),
-            Stats.APP_SYSTEM : len([i for i in auteur.validations if i.category == 'App - Système']),
-            Stats.WEB_SERVER : len([i for i in auteur.validations if i.category == 'Web - Serveur']),
-            Stats.CRYPTANALYSIS : len([i for i in auteur.validations if i.category == 'Cryptanalyse']),
-            Stats.STEGANOGRAPHY : len([i for i in auteur.validations if i.category == 'Stéganographie']),
-            Stats.REALIST : len([i for i in auteur.validations if i.category == 'Réaliste']),
-            Stats.FORENSICS : len([i for i in auteur.validations if i.category == 'Forensic'])
+            Stats.WEB_CLIENT : len([i for i in auteur.solves if i.category == 'Web - Client']),
+            Stats.APP_SCRIPT : len([i for i in auteur.solves if i.category == 'App - Script']),
+            Stats.PROGRAMMING : len([i for i in auteur.solves if i.category == 'Programmation']),
+            Stats.CRACKING : len([i for i in auteur.solves if i.category == 'Cracking']),
+            Stats.NETWORK : len([i for i in auteur.solves if i.category == 'Réseau']),
+            Stats.APP_SYSTEM : len([i for i in auteur.solves if i.category == 'App - Système']),
+            Stats.WEB_SERVER : len([i for i in auteur.solves if i.category == 'Web - Serveur']),
+            Stats.CRYPTANALYSIS : len([i for i in auteur.solves if i.category == 'Cryptanalyse']),
+            Stats.STEGANOGRAPHY : len([i for i in auteur.solves if i.category == 'Stéganographie']),
+            Stats.REALIST : len([i for i in auteur.solves if i.category == 'Réaliste']),
+            Stats.FORENSICS : len([i for i in auteur.solves if i.category == 'Forensic'])
             }
 
     first_column = f'**\nWeb Client**'

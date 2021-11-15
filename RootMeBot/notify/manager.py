@@ -16,14 +16,14 @@ class NotificationManager():
 
 	def add_solve_to_queue(self, solve: Solve, above: tuple[str, int]) -> None:
 		"""Adds a new solve by someone in the queue"""
-		auteur = solve[0]
-		challenge = solve[1]
+		auteur = solve.solver
+		challenge = solve.challenge
 
 		if not challenge:
 			return
 
 		self.new_solves.append((auteur, challenge, above))
-		print(self)
+		#print(self)
 
 	def get_solve_queue(self) -> Solves:
 		"""Returns the currently enqueued solves"""

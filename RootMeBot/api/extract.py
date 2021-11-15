@@ -4,10 +4,11 @@ from datetime import datetime
 
 from database.models.auteur_model import Auteur
 from database.models.challenge_model import Challenge
+from database.models.validation_model import Validation
 from database.models.base_model import Base
 
 
-def extract_auteur(user_data: dict) -> tuple[Auteur, list[int]]:
+def extract_auteur(user_data: dict) -> Auteur:
     """Parses data to create an Auteur"""
     idx, user_name, user_score = int(user_data['id_auteur']), user_data['nom'], int(user_data['score'])
     
@@ -21,8 +22,11 @@ def extract_auteur(user_data: dict) -> tuple[Auteur, list[int]]:
 
     vals = []
     for validation in user_data['validations']:
-        vals.append(Challenge(idx=int(validation['id_challenge'])))
-    
+        c = Challenge(idx=int(validation['id_challenge']))
+        d = datetime.strptime(validation["date"], "%Y-%m-%d %H:%M:%S")
+        v = Validation(date=d, challenge_id=c.idx, auteur_id=aut.idx)
+        vals.append(v)
+
     aut.validations = vals
 
     return aut
