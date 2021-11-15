@@ -45,12 +45,14 @@ class RootMeBot():
 
 
     async def after_init(self, func):
-        print("Check OK after_init")
         return self.init_done
 
     def check_channel(self):
         async def predicate(context):
-            return context.message.channel.id == self.BOT_CHANNEL
+            if context.message.channel.id == self.BOT_CHANNEL:
+                return True
+            print(f"Check channel not OK : {context.message.channel.id} - {self.BOT_CHANNEL}")
+            return False
         return commands.check(predicate)
 
     def get_command_args(self, context: commands.context.Context) -> list[str]:
@@ -66,11 +68,9 @@ class RootMeBot():
 
         await self.database_manager.create_scoreboard('global')
 
-        if self.database_manager.count_challenges() < 300:
-
-            await utils.init_start(channel)
-            await self.database_manager.update_challenges(init=True)
-            await utils.init_end(channel)
+        await utils.init_start(channel)
+        await self.database_manager.update_challenges(init=True)
+        await utils.init_end(channel)
 
         print("Done")
         self.init_done = True
@@ -115,8 +115,8 @@ class RootMeBot():
         print("OK challs")
         while True:
             
-            await self.database_manager.update_challenges()
             await asyncio.sleep(300)
+            await self.database_manager.update_challenges()
 
 
     async def cron_check_solves(self) -> None:
@@ -439,10 +439,14 @@ class RootMeBot():
         print("START")
         self.catch()
 
+        self.database_manager.loop = self.bot.loop
+
         self.bot.loop.create_task(self.init_db())
+        
         self.worker = self.bot.loop.create_task(self.database_manager.rootme_api.worker())
         self.check_solves = self.bot.loop.create_task(self.cron_check_solves())
         self.check_challs = self.bot.loop.create_task(self.cron_check_challs())
+
         self.bot.loop.create_task(self.cron_display())
 
 

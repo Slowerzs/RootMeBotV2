@@ -75,7 +75,7 @@ class DatabaseManager():
         with self.Session.begin() as session:
             old_challs = session.query(Challenge).all()
             old_ids = [c.idx for c in old_challs]
-            all_challenges = await self.rootme_api.fetch_all_challenges()    
+            all_challenges = await self.rootme_api.fetch_all_challenges()
             new_challenges = [new_chall for new_chall in all_challenges if new_chall.idx not in old_ids]
 
 
@@ -97,11 +97,10 @@ class DatabaseManager():
             if not init:
                 self.notification_manager.add_chall_to_queue(full_chall)
 
+        await asyncio.gather(*(get_new_chall(chall.idx) for chall in new_challenges))
 
-        for chall in new_challenges:
-            await get_new_chall(chall.idx)
+        print("Done updating challenges !")
 
-    
         return
 
     async def get_all_users_from_db(self) -> list[Auteur]:
@@ -168,11 +167,11 @@ class DatabaseManager():
 
         return ret
 
-    async def retreive_user(self, idx: int) -> Auteur:
+    async def retreive_user(self, idx: int, priority=1) -> Auteur:
         """Returns a Auteur populated properly"""
 
         with self.Session.begin() as session:
-            auteur = await self.rootme_api.get_user_by_id(idx)
+            auteur = await self.rootme_api.get_user_by_id(idx, priority)
             
             if not auteur:
                 return None
@@ -269,7 +268,7 @@ class DatabaseManager():
         """Adds a user from the api if we don't already have it"""
         aut = await self.get_user_from_db(idx)
         if not aut:
-            full_auteur = await self.retreive_user(idx)
+            full_auteur = await self.retreive_user(idx, priority=0)
             return full_auteur
         else:
             return aut
@@ -279,9 +278,7 @@ class DatabaseManager():
         """Updates all users"""
 
         with self.Session.begin() as session:
-            for aut in session.query(Auteur).all():
-                #print(aut)
-                await self.update_user(aut.idx)
+            await asyncio.gather(*(self.update_user(aut.idx) for aut in session.query(Auteur).all()))
 
     async def get_stats(self) -> dict:
         """Queries db for how many chall per category"""

@@ -35,12 +35,13 @@ def extract_auteurs_short(users_data: list) -> list[AuteurShort]:
     """Parses data to create a list of AuteurShort"""
 
     users = []
+    if users_data:
 
-    users_data = users_data[0]
+        users_data = users_data[0]
     
-    for user_pos in range(min(len(users_data), 49)):
-        users.append(AuteurShort(int(users_data[str(user_pos)]['id_auteur']), users_data[str(user_pos)]['nom']))
-    
+        for user_pos in range(min(len(users_data), 49)):
+            users.append(AuteurShort(int(users_data[str(user_pos)]['id_auteur']), users_data[str(user_pos)]['nom']))
+        
     return users
 
 def extract_challenge(challenge_data: dict, idx) -> Challenge:

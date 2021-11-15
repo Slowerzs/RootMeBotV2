@@ -136,9 +136,9 @@ class MultipleUserFoundView(discord.ui.View):
 
     async def add_user(self, idx: str):
         auteur = next(filter(lambda x: x.idx == int(idx), self.users))
-        aut = await self.database_manager.add_user(auteur.idx)
+        #aut = await self.database_manager.add_user(auteur.idx)
 
-        await utils.added_ok(self.channel, aut.username)
+        await utils.added_ok(self.channel, 'User')
 
 
 
