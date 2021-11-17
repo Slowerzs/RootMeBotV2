@@ -1,7 +1,7 @@
 import asyncio
 
 from sqlalchemy import create_engine, func
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, make_transient
 
 import database.models.base_model as db
 from database.models.challenge_model import Challenge
@@ -38,7 +38,6 @@ class DatabaseManager():
         Base.metadata.create_all(bind=self.engine)
        
         self.Session = sessionmaker(self.engine, expire_on_commit=False)
-
 
     def count_challenges(self) -> int:
         """Counts number of challenges, used for initialization"""
@@ -77,6 +76,7 @@ class DatabaseManager():
             old_challs = session.query(Challenge).all()
             old_ids = [c.idx for c in old_challs]
             all_challenges = await self.rootme_api.fetch_all_challenges()
+
             new_challenges = [new_chall for new_chall in all_challenges if new_chall.idx not in old_ids]
 
 
@@ -184,11 +184,16 @@ class DatabaseManager():
 
         with self.Session.begin() as session: 
 
+            old_auteur = await self.get_user_from_db(idx)
+            old_auteur = session.merge(old_auteur)
+
+            old_solves = old_auteur.solves
+            make_transient(old_auteur)
+
             full_auteur = await self.retreive_user(idx)
             full_auteur = session.merge(full_auteur)
 
-            old_auteur = await self.get_user_from_db(idx)
-            old_auteur = session.merge(old_auteur)
+            #code.interact(local=locals())
 
             for validation in full_auteur.validation_aut:
                 if validation.challenge_id not in [i.idx for i in old_auteur.solves]:
@@ -206,7 +211,12 @@ class DatabaseManager():
 
                 if val.challenge_id:
                     #Premium challenge are None, we can't notify them :(
-                    self.notification_manager.add_solve_to_queue(val, above)
+                    if len(val.validation_challenge.solvers) <= 3:
+                        is_blood = True
+                    else:
+                        is_blood = False
+
+                    self.notification_manager.add_solve_to_queue(val, above, is_blood)
 
 
 
@@ -272,6 +282,30 @@ class DatabaseManager():
 
 
         return stats
+
+    async def get_stats_auteur(self, auteur: Auteur) -> dict:
+        """Queries db for the stats of a single auteur"""
+
+        with self.Session.begin() as session:
+
+            auteur = session.merge(auteur)
+
+            solves = {
+                Stats.WEB_CLIENT : len([i for i in auteur.solves if i.category == 'Web - Client']),
+                Stats.APP_SCRIPT : len([i for i in auteur.solves if i.category == 'App - Script']),
+                Stats.PROGRAMMING : len([i for i in auteur.solves if i.category == 'Programmation']),
+                Stats.CRACKING : len([i for i in auteur.solves if i.category == 'Cracking']),
+                Stats.NETWORK : len([i for i in auteur.solves if i.category == 'Réseau']),
+                Stats.APP_SYSTEM : len([i for i in auteur.solves if i.category == 'App - Système']),
+                Stats.WEB_SERVER : len([i for i in auteur.solves if i.category == 'Web - Serveur']),
+                Stats.CRYPTANALYSIS : len([i for i in auteur.solves if i.category == 'Cryptanalyse']),
+                Stats.STEGANOGRAPHY : len([i for i in auteur.solves if i.category == 'Stéganographie']),
+                Stats.REALIST : len([i for i in auteur.solves if i.category == 'Réaliste']),
+                Stats.FORENSICS : len([i for i in auteur.solves if i.category == 'Forensic'])
+            }
+
+        return solves
+
 
     async def get_scoreboard(self, name: str) -> Scoreboard:
         """Retreives a scoreboard from db by name"""

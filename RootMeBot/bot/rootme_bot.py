@@ -90,13 +90,8 @@ class RootMeBot():
 
         while True:
 
-            for aut, chall, score_above in self.notification_manager.get_solve_queue():
+            for aut, chall, score_above, is_blood in self.notification_manager.get_solve_queue():
                 if chall:
-                    db_chall = await self.database_manager.get_challenge_from_db(chall.idx) 
-                    if len(db_chall.solvers) <= 2:
-                        is_blood = True
-                    else:
-                        is_blood = False
                     await utils.send_new_solve(channel, chall, aut, score_above, is_blood)
                     
 
@@ -303,9 +298,10 @@ class RootMeBot():
             search = str(' '.join(args))
             
             auteurs = await self.database_manager.search_user(search)
-            
+            print(auteurs)
+
             if auteurs:
-                await utils.possible_users(context.message.channel, auteurs)
+                await utils.many_users(context.message.channel, auteurs)
             else:
                 await utils.cant_find_user(context.message.channel, search)
 
@@ -351,8 +347,10 @@ class RootMeBot():
                 image_profile = 'https://www.root-me.org/IMG/auton0.png'
 
             stats_glob = await self.database_manager.get_stats()
+            stats_auteur = await self.database_manager.get_stats_auteur(auteur)
+            data = (auteur.username, auteur.score, auteur.rank)
 
-            await utils.profile(context.message.channel, auteur, stats_glob, image_profile)
+            await utils.profile(context.message.channel, data, stats_auteur, stats_glob, image_profile)
 
 
 

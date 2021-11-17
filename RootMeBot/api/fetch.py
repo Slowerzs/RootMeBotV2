@@ -57,15 +57,33 @@ class ApiRootMe():
             
             prio , req = await self.queue.get()
 
-            url, params, key = req
+            url, params, key, method = req
+
+            if method == 'GET':
+                method_http = self.session.get
+            elif method == 'HEAD':
+                method_http = self.session.head
+
 
             while not check:
                 await asyncio.sleep(4.80)
                 print(f"[{datetime.now().strftime('%H:%M:%S')}] Treating item in queue : {key} -> {url} + {params} - (Priority {prio})")
                 try:
-                    async with self.session.get(url, params=params, cookies=cookies_rootme) as r:
+                    async with method_http(url, params=params, cookies=cookies_rootme) as r:
+
+                        # HEAD
+                        if method == 'HEAD':
+                            if r.status == 200:
+                                data = '200'
+                                check = True
+                            elif r.status == 404:
+                                data = '404'
+                                check = True
+                            continue
+
+                        # GET
                         if r.status == 200:
-                            data = await r.json()
+                            data = await r.text()
                             check = True
                         elif r.status == 401:
                             data = 'PREMIUM'
@@ -74,6 +92,7 @@ class ApiRootMe():
                             print(f'Status : {r.status} - restarting')
                             await asyncio.sleep(15)
                             check = False
+
                 except ClientOSError as e:
                     print(f"[{datetime.now().strftime('%H:%M:%S')}] Got {e.__class__.__name__}, retrying in 15s...")
                     await asyncio.sleep(15)
@@ -96,13 +115,31 @@ class ApiRootMe():
         event = asyncio.Event()
         self.requests[key] = {}
         self.requests[key]['event'] = event
-        await self.queue.put((priority, (url, params, key)))
+        await self.queue.put((priority, (url, params, key, 'GET')))
+        await event.wait()
+
+        result = json.loads(self.requests[key]['result'])
+        del self.requests[key]
+
+        return result
+
+
+    async def head(self, url, priority=1):
+        key = uuid.uuid4().hex
+
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] Request for {url} added to queue -> {key} (Priority {priority})")
+
+        event = asyncio.Event()
+        self.requests[key] = {}
+        self.requests[key]['event'] = event
+        await self.queue.put((priority, (url, {}, key, 'HEAD')))
         await event.wait()
 
         result = self.requests[key]['result']
         del self.requests[key]
 
         return result
+
 
 
 
@@ -190,83 +227,21 @@ class ApiRootMe():
         challenge = extract_challenge(challenge_data, idx)
         return challenge
 
-    @async_request
-    async def get_image_png(self, idx: int, session: aiohttp.ClientSession) -> str:
-
-        if datetime.now() < self.ban:
-            print(self.ban)
-            while datetime.now() < self.ban:
-                await asyncio.sleep(1)
-
-            await self.bot.unbanned()
+    async def get_image_png(self, idx: int) -> str:
 
         url = f'https://www.root-me.org/IMG/auton{idx}.png'
-        try:
-            async with session.head(url, timeout=self.timeout) as r:
-                if r.status == 200:
-                    return url
-                elif r.status == 429:
-                    self.ban = datetime.now() + timedelta(minutes=0, seconds=10)
 
-                elif r.status == 403:
-                    self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
-                    await self.bot.banned()
-                else:
-                    return None     
-        
-        except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError, ClientOSError):
-            print(f"Banned {datetime.now()}")
-            self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
-            self.session = aiohttp.ClientSession(connector=self.connector)
-            await self.bot.banned()
-            return None
-        except TimeoutError:
+        code = await self.head(url, priority=0)
 
-            await self.bot.banned()
-            self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
-            print(f"Banned {datetime.now()}")
-            
-            return await self.get_image_png(idx)
+        if code == '200':
+            return url
 
-
-    @async_request
-    async def get_image_jpg(self, idx: int, session: aiohttp.ClientSession) -> str:
-
-        if datetime.now() < self.ban:
-            print(self.ban)
-            while datetime.now() < self.ban:
-                await asyncio.sleep(1)
-
-            await self.bot.unbanned()
+    async def get_image_jpg(self, idx: int) -> str:
 
         url = f'https://www.root-me.org/IMG/auton{idx}.jpg'
-        try:
-            async with session.head(url, timeout=self.timeout) as r:
-                if r.status == 200:
-                    return url
+        code = await self.head(url, priority=0)
 
-                elif r.status == 429:
-                    self.ban = datetime.now() + timedelta(minutes=0, seconds=10)
-
-                elif r.status == 403:
-                    self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
-                    await self.bot.banned()
-
-                else:
-                    return None         
-        except (ServerDisconnectedError, ClientConnectorError, ClientPayloadError, ClientOSError):
-            self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
-            self.session = aiohttp.ClientSession(connector=self.connector)
-            print(f"Banned {datetime.now()}")
-            await self.bot.banned()
-            return None
-        except TimeoutError:
-
-            await self.bot.banned()
-            self.ban = datetime.now() + timedelta(minutes=5, seconds=30)
-            print(f"Banned {datetime.now()}")
-            
-            return await self.get_image_jpg(idx)
-
+        if code == '200':
+            return url
 
 

@@ -9,41 +9,41 @@ Solve = tuple[AuteurData, ChallengeData]
 
 class NotificationManager():
 
-	def __init__(self) -> None:
-		self.new_challenges = []
-		self.new_solves = []
+    def __init__(self) -> None:
+        self.new_challenges = []
+        self.new_solves = []
 
 
-	def add_solve_to_queue(self, val: Solve, above: tuple[str, int]) -> None:
-		"""Adds a new solve by someone in the queue"""
-		auteur = val.validation_auteur
-		challenge = val.validation_challenge
+    def add_solve_to_queue(self, val: Solve, above: tuple[str, int], is_blood: bool) -> None:
+        """Adds a new solve by someone in the queue"""
+        auteur = val.validation_auteur
+        challenge = val.validation_challenge
 
-		if not challenge:
-			return
+        if not challenge:
+            return
 
-		self.new_solves.append((auteur, challenge, above))
+        self.new_solves.append((auteur, challenge, above, is_blood))
 
-	def get_solve_queue(self) -> Solves:
-		"""Returns the currently enqueued solves"""
-		queue = [self.new_solves.pop() for i in range(len(self.new_solves))]
-		return queue
+    def get_solve_queue(self) -> Solves:
+        """Returns the currently enqueued solves"""
+        queue = [self.new_solves.pop() for i in range(len(self.new_solves))]
+        return queue
 
-	def add_chall_to_queue(self, challenge: ChallengeData) -> None:
-		"""Adds a new challenge in the queue"""
-		self.new_challenges.append(challenge)
-		
+    def add_chall_to_queue(self, challenge: ChallengeData) -> None:
+        """Adds a new challenge in the queue"""
+        self.new_challenges.append(challenge)
+        
 
-	def get_chall_queue(self) -> Challenges:
-		"""Returns the currently enqueued challenges"""
-		queue = [chall for chall in self.new_challenges]
-		self.new_challenges = []
-		return queue
+    def get_chall_queue(self) -> Challenges:
+        """Returns the currently enqueued challenges"""
+        queue = [chall for chall in self.new_challenges]
+        self.new_challenges = []
+        return queue
 
-	def __str__(self) -> str:
-		output = f"""Challenge queue : [{', '.join([str(chall.idx) for chall in self.new_challenges])}]\n"""
-		output += f"""Solves in queue : [{', '.join([str(chall.idx) + ' by ' + aut.username for aut, chall, _ in self.new_solves])}]"""
-		return output
+    def __str__(self) -> str:
+        output = f"""Challenge queue : [{', '.join([str(chall.idx) for chall in self.new_challenges])}]\n"""
+        output += f"""Solves in queue : [{', '.join([str(chall.idx) + ' by ' + aut.username for aut, chall, _ in self.new_solves])}]"""
+        return output
 
 
 

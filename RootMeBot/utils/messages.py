@@ -4,12 +4,13 @@ import code
 from html import unescape
 
 from discord.utils import escape_markdown
+from discord.channel import TextChannel
 
 from database.manager import DatabaseManager
-from discord.channel import TextChannel
 
 from classes.enums import Color, Stats
 from classes.views import ManageView, ScoreboardView, MultipleChallFoundView, MultipleUserFoundView
+from constants import PING_ROLE_ROOTME
 
 from database.models.auteur_model import Auteur
 from database.models.scoreboard_model import Scoreboard
@@ -61,13 +62,13 @@ async def send_new_solve(channel: TextChannel, chall: Challenge, aut: Auteur, ab
         emoji = ':partying_face:'
 
     message_title = f'New challenge solved by {escape_markdown(aut.username)} {emoji}'
-    
+
     message = f' • {unescape(chall.title)} ({chall.score} points)'
     message += f'\n • Category: {chall.category}'
     message += f'\n • Difficulty: {chall.difficulty}'
     message += f'\n • New score: {aut.score}'
-    message += f'\n • Validations: {chall.validations}'
-    message += f'\n • Date: {chall.validations}'
+    message += f'\n • Validations: {chall.validation_number}'
+    message += f'\n • Date: {chall.validation_chall[0].date.strftime("%d/%m/%y %Hh%Mm%Ss")}'
 
     embed = discord.Embed(color=Color.NEW_YELLOW.value, title=message_title, description=message)
     
@@ -81,7 +82,7 @@ async def send_new_solve(channel: TextChannel, chall: Challenge, aut: Auteur, ab
 async def send_new_challenge(channel: TextChannel, chall: Challenge) -> None:
     """Posts a new challenge in the right channel"""
 
-    ping = f'<@&{Color.PING_ROLE_ROOTME.value}>'
+    ping = f'<@&{PING_ROLE_ROOTME}>'
     message_title = f'New Challenge ! :open_mouth:'
 
     message = f' • {unescape(chall.title)} ({chall.score} points)'
@@ -248,24 +249,12 @@ async def multiple_users(channel: TextChannel, auteurs: Auteurs) -> None:
     await channel.send(embed=embed)
 
 
-async def profile(channel: TextChannel, auteur: Auteur, stats_glob: list[int], image_url: str) -> None:
+async def profile(channel: TextChannel, data: tuple[str, int, int], solves: dict, stats_glob: list[int], image_url: str) -> None:
 
-    message_title = f'Profile of {auteur.username}'
+    username, score, rank = data
+
+    message_title = f'Profile of {username}'
     
-    solves = {
-            Stats.WEB_CLIENT : len([i for i in auteur.solves if i.category == 'Web - Client']),
-            Stats.APP_SCRIPT : len([i for i in auteur.solves if i.category == 'App - Script']),
-            Stats.PROGRAMMING : len([i for i in auteur.solves if i.category == 'Programmation']),
-            Stats.CRACKING : len([i for i in auteur.solves if i.category == 'Cracking']),
-            Stats.NETWORK : len([i for i in auteur.solves if i.category == 'Réseau']),
-            Stats.APP_SYSTEM : len([i for i in auteur.solves if i.category == 'App - Système']),
-            Stats.WEB_SERVER : len([i for i in auteur.solves if i.category == 'Web - Serveur']),
-            Stats.CRYPTANALYSIS : len([i for i in auteur.solves if i.category == 'Cryptanalyse']),
-            Stats.STEGANOGRAPHY : len([i for i in auteur.solves if i.category == 'Stéganographie']),
-            Stats.REALIST : len([i for i in auteur.solves if i.category == 'Réaliste']),
-            Stats.FORENSICS : len([i for i in auteur.solves if i.category == 'Forensic'])
-            }
-
     first_column = f'**\nWeb Client**'
     first_column += f'\n{solves[Stats.WEB_CLIENT]}/{stats_glob[Stats.WEB_CLIENT]}'
     first_column += f'\n**App-Script**'
@@ -292,9 +281,9 @@ async def profile(channel: TextChannel, auteur: Auteur, stats_glob: list[int], i
 
     embed = discord.Embed(color=Color.INFO_BLUE.value, title=message_title)
 
-    embed.add_field(name=f'Score: {auteur.score}', value=first_column, inline=True)
+    embed.add_field(name=f'Score: {score}', value=first_column, inline=True)
     embed.add_field(name=f'**\n**', value=f'**\n**', inline=True)
-    embed.add_field(name=f'Rank: {auteur.rank}', value=second_column, inline=True)
+    embed.add_field(name=f'Rank: {rank}', value=second_column, inline=True)
 
     embed.set_thumbnail(url=image_url)
         

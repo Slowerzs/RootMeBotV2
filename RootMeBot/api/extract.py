@@ -27,7 +27,7 @@ def extract_auteur(user_data: dict) -> Auteur:
         c = Challenge(idx=int(validation['id_challenge']))
         d = datetime.strptime(validation["date"], "%Y-%m-%d %H:%M:%S")
         
-        v_idx = user_name + validation['id_challenge']
+        v_idx = str(aut.idx) + "-" + validation['id_challenge']
 
         v = Validation(idx = v_idx, date=d)
         v.validation_auteur = aut 
