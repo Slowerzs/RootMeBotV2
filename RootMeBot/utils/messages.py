@@ -1,6 +1,6 @@
 import discord
 import aiohttp
-
+import code
 from html import unescape
 
 from discord.utils import escape_markdown
@@ -187,12 +187,15 @@ async def many_users(channel: TextChannel, auteurs: Auteurs) -> None:
     await channel.send(embed=embed)
 
 
-async def who_solved(channel: TextChannel, chall: Challenge) -> None:
+async def who_solved(channel: TextChannel, chall: Challenge, Session) -> None:
     
     message_title = f'Solvers of {unescape(chall.title)} :sunglasses:'
     message = ''
-    for auteur in chall.solvers:
-        message += f' • • • {escape_markdown(auteur.username)}\n' 
+    with Session.begin() as session:
+        chall = session.merge(chall)
+
+        for auteur in chall.solvers:
+            message += f' • • • {escape_markdown(auteur.username)}\n' 
 
 
     embed = discord.Embed(color=Color.INFO_BLUE.value, title=message_title, description=message)
@@ -216,11 +219,11 @@ async def many_challenges(channel: TextChannel, challenges: Challenges) -> None:
 
     await channel.send(embed=embed)
 
-async def multiple_challenges(channel: TextChannel, challenges: Challenges) -> None:
+async def multiple_challenges(channel: TextChannel, challenges: Challenges, Session) -> None:
 
     message = f'Multiple challenges found :'
 
-    view = MultipleChallFoundView(channel, challenges) 
+    view = MultipleChallFoundView(channel, challenges, Session) 
 
     await channel.send(message, view=view)
 

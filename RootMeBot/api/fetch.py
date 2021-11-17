@@ -55,13 +55,13 @@ class ApiRootMe():
             
             check = False
             
-            _ , req = await self.queue.get()
+            prio , req = await self.queue.get()
 
             url, params, key = req
 
             while not check:
-                await asyncio.sleep(4.90)
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] Treating item in queue : {key} -> {url} + {params}")
+                await asyncio.sleep(4.80)
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] Treating item in queue : {key} -> {url} + {params} - (Priority {prio})")
                 try:
                     async with self.session.get(url, params=params, cookies=cookies_rootme) as r:
                         if r.status == 200:
@@ -74,9 +74,12 @@ class ApiRootMe():
                             print(f'Status : {r.status} - restarting')
                             await asyncio.sleep(15)
                             check = False
-                except ServerDisconnectedError:
-                    print(f"[{datetime.now().strftime('%H:%M:%S')}] Got Server Disconnect, retrying in 15s...")
+                except ClientOSError as e:
+                    print(f"[{datetime.now().strftime('%H:%M:%S')}] Got {e.__class__.__name__}, retrying in 15s...")
                     await asyncio.sleep(15)
+                    check = False
+                except ServerDisconnectedError as e:
+                    print(f"[{datetime.now().strftime('%H:%M:%S')}] Got {e.__class__.__name__}, retrying...")
                     check = False
 
 
@@ -88,27 +91,22 @@ class ApiRootMe():
     async def get(self, url, params, priority=1):
         key = uuid.uuid4().hex
 
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] Request for {url} added to queue -> {key}")
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] Request for {url} added to queue -> {key} (Priority {priority})")
 
         event = asyncio.Event()
         self.requests[key] = {}
         self.requests[key]['event'] = event
         await self.queue.put((priority, (url, params, key)))
-        #print(self.queue)
         await event.wait()
 
-
         result = self.requests[key]['result']
-        
-        #print(f"Got result for {key}")
-        
         del self.requests[key]
 
         return result
 
 
 
-    async def get_user_by_id(self, idx: int) -> Auteur:
+    async def get_user_by_id(self, idx: int, priority=1) -> Auteur:
         """Retreives an Auteur by id"""
         
         if idx == 0:
@@ -127,11 +125,11 @@ class ApiRootMe():
             }
 
 
-        user_data = await self.get(f"{api_base_url}{auteurs_path}/{idx}", params)
+        user_data = await self.get(f"{api_base_url}{auteurs_path}/{idx}", params, priority)
         aut = extract_auteur(user_data)
         return aut
 
-    async def search_user_by_name(self, username: str, start: int) -> Auteurs:
+    async def search_user_by_name(self, username: str, start: int, priority=1) -> Auteurs:
         """Retreives a list of all matching usernames, possibly none"""
 
         params = {
@@ -145,7 +143,7 @@ class ApiRootMe():
         current_users = extract_auteurs_short(users_data)
 
         if len(current_users) == 50:
-            return current_users + await self.search_user_by_name(username, start + 50)
+            return current_users + await self.search_user_by_name(username, start + 50, priority)
 
         self.lang = DEFAULT_LANG
         return current_users

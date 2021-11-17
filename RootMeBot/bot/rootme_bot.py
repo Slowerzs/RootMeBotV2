@@ -68,13 +68,14 @@ class RootMeBot():
 
         await self.database_manager.create_scoreboard('global')
 
-        await utils.init_start(channel)
-        await self.database_manager.update_challenges(init=True)
-        await utils.init_end(channel)
+        if self.database_manager.count_challenges() < 300:
 
-        print("Done")
+            await utils.init_start(channel)
+            await self.database_manager.update_challenges(init=True)
+            await utils.init_end(channel)
+
+        print("Init DB done")
         self.init_done = True
-        print(self.init_done)
 
 
     async def cron_display(self) -> None:
@@ -115,7 +116,7 @@ class RootMeBot():
         print("OK challs")
         while True:
             
-            await asyncio.sleep(300)
+            await asyncio.sleep(3600 * 24)
             await self.database_manager.update_challenges()
 
 
@@ -412,7 +413,7 @@ class RootMeBot():
                 chall = await self.database_manager.get_challenge_from_db(search_id)                
                 
                 if chall:
-                    await utils.who_solved(context.message.channel, chall)
+                    await utils.who_solved(context.message.channel, chall, self.database_manager.Session)
                 else:
                     await utils.cant_find_challenge(context.message.channel, search)
 
@@ -423,11 +424,11 @@ class RootMeBot():
                     await utils.many_challenges(context.message.channel, results)
 
                 elif len(results) > 1:
-                    await utils.multiple_challenges(context.message.channel, results)
+                    await utils.multiple_challenges(context.message.channel, results, self.database_manager.Session)
                 
                 elif len(results) == 1:
                     chall = results[0]
-                    await utils.who_solved(context.message.channel, chall)
+                    await utils.who_solved(context.message.channel, chall, self.database_manager.Session)
 
                 else:
                     await utils.cant_find_challenge(context.message.channel, search)

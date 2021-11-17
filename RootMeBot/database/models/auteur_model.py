@@ -1,7 +1,7 @@
 from sqlalchemy import Table, Column, Integer, ForeignKey, Text, DateTime
 from sqlalchemy.orm import relationship
-from database.models.base_model import *
 
+from database.models.base_model import *
 
 class Auteur(Base):
     __tablename__ = 'auteurs'
@@ -15,3 +15,4 @@ class Auteur(Base):
 
     def __repr__(self) -> str:
         return f"User {self.username}-{self.idx}: {self.score} points [{self.rank}|{len(self.solves)}]"
+

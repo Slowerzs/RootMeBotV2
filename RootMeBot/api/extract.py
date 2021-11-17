@@ -1,3 +1,5 @@
+import code
+
 from classes.auteur import *
 from classes.challenge import *
 from datetime import datetime
@@ -20,14 +22,17 @@ def extract_auteur(user_data: dict) -> Auteur:
 
     aut = Auteur(idx=idx, username=user_name, score=user_score, rank=user_rank)
 
-    vals = []
     for validation in user_data['validations']:
+
         c = Challenge(idx=int(validation['id_challenge']))
         d = datetime.strptime(validation["date"], "%Y-%m-%d %H:%M:%S")
-        v = Validation(date=d, challenge_id=c.idx, auteur_id=aut.idx)
-        vals.append(v)
+        
+        v_idx = user_name + validation['id_challenge']
 
-    aut.validations = vals
+        v = Validation(idx = v_idx, date=d)
+        v.validation_auteur = aut 
+        v.validation_challenge = c
+
 
     return aut
 
@@ -53,15 +58,15 @@ def extract_challenge(challenge_data: dict, idx) -> Challenge:
     difficulty = challenge_data['difficulte']
     date = challenge_data['date_publication']
     try:
-        validations = int(challenge_data['validations'])
+        validation_number = int(challenge_data['validations'])
     except KeyError:
         #Challenges with 0 solves don't have a validations field
-        validations = 0
+        validation_number = 0
 
     format_date = "%Y-%m-%d %H:%M:%S"
 
     date_time = datetime.strptime(date, format_date) 
-    challenge = Challenge(idx=idx, title=titre, category=category, description=description, score=score, difficulty=difficulty, date=date_time, validations=validations)
+    challenge = Challenge(idx=idx, title=titre, category=category, description=description, score=score, difficulty=difficulty, date=date_time, validation_number=validation_number)
     
 
     return challenge

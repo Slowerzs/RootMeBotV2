@@ -2,6 +2,8 @@ import discord
 from discord.channel import TextChannel
 from discord.utils import escape_markdown
 
+import asyncio
+
 from html import unescape
 
 from database.models.scoreboard_model import Scoreboard
@@ -53,7 +55,7 @@ class ManageView(discord.ui.View):
 
         for idx, sc in enumerate(scoreboards):
             #maximum 5 buttons per row
-            self.add_item(ManageButton(sc, idx // 5, sc.idx in [i.idx for i in self.auteur.scoreboards]))
+            self.add_item(ManageButton(sc, idx // 5, sc.name in [i.name for i in self.auteur.scoreboards]))
 
     async def add_to_sc(self, scoreboard: Scoreboard):
         return await self.database_manager.add_to_scoreboard(self.auteur.idx, scoreboard.name)
@@ -102,8 +104,9 @@ class MultipleChallButton(discord.ui.Select):
         await self.view.show_challenge(self.values[0])
 
 class MultipleChallFoundView(discord.ui.View):
-    def __init__(self, channel: TextChannel, challenges: list[Challenge]):
+    def __init__(self, channel: TextChannel, challenges: list[Challenge], Session):
         super().__init__()
+        self.Session = Session
         self.channel = channel
         self.challenges = challenges
 
@@ -111,7 +114,7 @@ class MultipleChallFoundView(discord.ui.View):
 
     async def show_challenge(self, idx: str):
         chall = next(filter(lambda x: x.idx == int(idx), self.challenges))
-        await utils.who_solved(self.channel, chall)
+        await utils.who_solved(self.channel, chall, self.Session)
 
 class MultipleUserButton(discord.ui.Select):
     def __init__(self, users: list[Auteur]):
@@ -136,7 +139,8 @@ class MultipleUserFoundView(discord.ui.View):
 
     async def add_user(self, idx: str):
         auteur = next(filter(lambda x: x.idx == int(idx), self.users))
-        #aut = await self.database_manager.add_user(auteur.idx)
+        
+        asyncio.create_task(self.database_manager.add_user(auteur.idx))
 
         await utils.added_ok(self.channel, 'User')
 

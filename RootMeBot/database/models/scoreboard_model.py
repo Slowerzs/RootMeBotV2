@@ -4,14 +4,13 @@ from database.models.base_model import *
 from database.models.auteur_model import Auteur
 
 association_table = Table('association_auteur_scoreboard', Base.metadata,
-        Column('scoreboard_id', ForeignKey('scoreboards.idx'), primary_key=True),
+        Column('scoreboard_name', ForeignKey('scoreboards.name'), primary_key=True),
         Column('auteur_id', ForeignKey('auteurs.idx'), primary_key=True)
     )
 
 class Scoreboard(Base):
     __tablename__ = 'scoreboards'
-    idx = Column(Integer, primary_key=True)
-    name = Column(Text)
+    name = Column(Text, primary_key=True)
     users = relationship("Auteur",
             secondary = association_table,
             backref=backref("scoreboards", lazy='subquery'),

@@ -21,6 +21,8 @@ from constants import database_path
 
 from notify.manager import NotificationManager
 
+import code
+
 Solves = list[tuple[AuteurData, ChallengeData]]
 Challenges = list[ChallengeData]
 Auteurs = list[AuteurData]
@@ -54,7 +56,6 @@ class DatabaseManager():
             return None
 
         with self.Session.begin() as session:
-            #print(challenge)
             session.add(challenge)#probably need to consider that we already have it ?
 
         return challenge
@@ -173,102 +174,69 @@ class DatabaseManager():
         with self.Session.begin() as session:
             auteur = await self.rootme_api.get_user_by_id(idx, priority)
             
-            if not auteur:
-                return None
-    
-            proper_validations = []
-            for validation in auteur.validations:
-                #print(validation)
-                #Check if we have all the challenges in our db
-                db_chall = await self.get_challenge_from_db(validation.challenge_id)
-
-                if db_chall:
-                    #We already have
-
-                    v = Validation(date=validation.date, challenge_id=db_chall.idx, auteur_id=auteur.idx)
-                    proper_validations.append(v)
-
-
-                else:
-                    #We don't have the challenge, add it to db, then to validations
-                    chall = await self.add_challenge_to_db(validation.challenge_id)
-                    if chall:
-                        v = Validation(date=validation.date, challenge_id=chall.idx, auteur_id=auteur.idx)
-                        proper_validations.append(v)
-
-        with self.Session.begin() as session:
-            auteur.validations = proper_validations
-            auteur = session.merge(auteur)
-            await self.add_to_scoreboard(auteur.idx, 'global')
-            session.add(auteur)
-
         return auteur
 
 
     async def update_user(self, idx: int) -> None:
         """Tries to update a user to database, if it doesn't exist return nothing"""
-        new_solves = []
+        new_vals = []
         #If the user already exists in our database
 
         with self.Session.begin() as session: 
-            old_auteur = await self.get_user_from_db(idx)
-
-            old_auteur = session.merge(old_auteur)
-
 
             full_auteur = await self.retreive_user(idx)
-            if not full_auteur:
-                return
-            
             full_auteur = session.merge(full_auteur)
 
-            for validation in full_auteur.validations_auteur:
-                #print(validation)
-                if validation.challenge_id not in [i.challenge.idx for i in old_auteur.validations_auteur]:
-                    #Send notification
-                    new_solves.append(validation)
+            old_auteur = await self.get_user_from_db(idx)
+            old_auteur = session.merge(old_auteur)
 
-            for solve in new_solves:
-                res = session.query(Auteur.username, Auteur.score).filter(Auteur.score > solve.solver.score).order_by(Auteur.score.asc()).limit(1).one_or_none()
+            for validation in full_auteur.validation_aut:
+                if validation.challenge_id not in [i.idx for i in old_auteur.solves]:
+                    new_vals.append(validation)
+
+            for val in new_vals:
+                res = session.query(Auteur.username, Auteur.score).filter(Auteur.score > val.validation_auteur.score).order_by(Auteur.score.asc()).limit(1).one_or_none()
                 if res:
                     user_above, user_score = res
                 else:
                     #First person in scoreboard
                     user_above, user_score = ("", 0)
+
                 above = (user_above, user_score)
 
-                solve = session.merge(solve)
-
-                if solve.challenge:
+                if val.challenge_id:
                     #Premium challenge are None, we can't notify them :(
-                    self.notification_manager.add_solve_to_queue(solve, above)
+                    self.notification_manager.add_solve_to_queue(val, above)
 
 
 
     async def search_user(self, username: str) -> Auteurs:
         """Search user by name"""
-        full_auteurs = []
+        
         try:
-            auteurs = await self.rootme_api.search_user_by_name(username, 0)
+            auteurs = await self.rootme_api.search_user_by_name(username, 0, priority=0)
         except UnknownUser:
             #No user matches the username
             return []
 
-        for aut in auteurs:
-            try:
-                full_auteur = await self.rootme_api.get_user_by_id(aut.idx)
-                full_auteurs.append(full_auteur)
-            except UnknownUser:
-                #User might be banned, he still shows up in search but we can't get his profile
-                continue
-        return full_auteurs
+
+        fulls_auteurs = await asyncio.gather(*[self.rootme_api.get_user_by_id(aut.idx, priority=0) for aut in auteurs])
+       
+
+        return fulls_auteurs
 
 
     async def add_user(self, idx: int) -> Auteur:
         """Adds a user from the api if we don't already have it"""
+
         aut = await self.get_user_from_db(idx)
         if not aut:
-            full_auteur = await self.retreive_user(idx, priority=0)
+            with self.Session.begin() as session:
+                full_auteur = await self.retreive_user(idx, priority=0)
+                full_auteur = session.merge(full_auteur)
+                global_scoreboard = session.query(Scoreboard).where(Scoreboard.name == 'global').one()
+                full_auteur.scoreboards.append(global_scoreboard)
+                session.add(full_auteur)
             return full_auteur
         else:
             return aut
@@ -279,6 +247,8 @@ class DatabaseManager():
 
         with self.Session.begin() as session:
             await asyncio.gather(*(self.update_user(aut.idx) for aut in session.query(Auteur).all()))
+        
+        await asyncio.sleep(1)
 
     async def get_stats(self) -> dict:
         """Queries db for how many chall per category"""
