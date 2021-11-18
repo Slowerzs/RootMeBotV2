@@ -145,18 +145,7 @@ class ApiRootMe():
 
     async def get_user_by_id(self, idx: int, priority=1) -> Auteur:
         """Retreives an Auteur by id"""
-        
-        if idx == 0:
-            raise UnknownUser(idx)
-    
-        if datetime.now() < self.ban:
-            print(self.ban)
-            while datetime.now() < self.ban:
-                await asyncio.sleep(1)
-
-            await self.bot.unbanned()
-
-
+       
         params = {
             str(int(time.time())): str(int(time.time())),
             }

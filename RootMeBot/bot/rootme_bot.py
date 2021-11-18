@@ -213,7 +213,7 @@ class RootMeBot():
             username = ' '.join(self.get_command_args(context))
             auteurs = await self.database_manager.search_user(username)
             if len(auteurs) > 25:
-                await utils.many_users(context.message.channe, auteurs)
+                await utils.many_users(context.message.channel, auteurs)
 
             elif len(auteurs) > 1:
                 await utils.possible_users(context.message.channel, self.database_manager, auteurs)
