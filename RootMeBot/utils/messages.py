@@ -73,7 +73,7 @@ async def send_new_solve(channel: TextChannel, chall: Challenge, aut: Auteur, ab
     embed = discord.Embed(color=Color.NEW_YELLOW.value, title=message_title, description=message)
     
     if above[1]:
-        footer = f'{above[1] - aut.score} points to overtake {escape_markdown(above[0])}'
+        footer = f'{above[1] - aut.score} points to overtake {above[0]}'
         embed.set_footer(text=footer)
 
     await channel.send(embed=embed)
