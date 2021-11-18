@@ -127,7 +127,7 @@ async def scoreboard(channel: TextChannel, database_manager: DatabaseManager, na
 async def added_ok(channel: TextChannel, username: str) -> None:
     
     message_title = 'Success'
-    message = f'{escape_markdown(username)} was succesfully added :+1:'
+    message = f'{escape_markdown(username)} was successfully added :+1:'
 
     embed = discord.Embed(color=Color.SUCCESS_GREEN.value, title=message_title, description=message)
     await channel.send(embed=embed)
