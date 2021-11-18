@@ -54,7 +54,9 @@ class ApiRootMe():
             
             check = False
             
-            prio, req = await self.queue.get().data
+            data = await self.queue.get()
+
+            prio, req = data.priority, data.data
 
             url, params, key, method = req
 
