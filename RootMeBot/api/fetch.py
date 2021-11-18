@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime, timedelta
 
 from asyncio.exceptions import TimeoutError
-from aiohttp.client_exceptions import ServerDisconnectedError, ClientConnectorError, ClientPayloadError, ClientOSError, ClientOSError 
+from aiohttp.client_exceptions import ServerDisconnectedError, ClientConnectorError, ClientPayloadError, ClientOSError
 
 from api.extract import *
 
@@ -23,16 +23,15 @@ from constants import *
 Auteurs = list[AuteurShort]
 Challenges = list[ChallengeShort]
 
+class PriorityEntry(object):
 
+    def __init__(self, priority, data):
+        self.data = data
+        self.priority = priority
 
-def async_request(func):
-    @functools.wraps(func)
-    async def make_request(*args, **kwargs):
-        async with args[0].semaphore:
-            return await func(*args, args[0].session, **kwargs)
+    def __lt__(self, other):
+        return self.priority < other.priority
 
-    return make_request
-    
 
 class ApiRootMe():
 
@@ -55,7 +54,7 @@ class ApiRootMe():
             
             check = False
             
-            prio , req = await self.queue.get()
+            prio, req = await self.queue.get()
 
             url, params, key, method = req
 
@@ -66,7 +65,10 @@ class ApiRootMe():
 
 
             while not check:
-                await asyncio.sleep(4.80)
+
+
+
+                await asyncio.sleep(4.85)
                 print(f"[{datetime.now().strftime('%H:%M:%S')}] Treating item in queue : {key} -> {url} + {params} - (Priority {prio})")
                 try:
                     async with method_http(url, params=params, cookies=cookies_rootme) as r:
@@ -97,7 +99,7 @@ class ApiRootMe():
                     print(f"[{datetime.now().strftime('%H:%M:%S')}] Got {e.__class__.__name__}, retrying in 15s...")
                     await asyncio.sleep(15)
                     check = False
-                except ServerDisconnectedError as e:
+                except (ServerDisconnectedError, ClientPayloadError) as e:
                     print(f"[{datetime.now().strftime('%H:%M:%S')}] Got {e.__class__.__name__}, retrying...")
                     check = False
 
@@ -115,7 +117,8 @@ class ApiRootMe():
         event = asyncio.Event()
         self.requests[key] = {}
         self.requests[key]['event'] = event
-        await self.queue.put((priority, (url, params, key, 'GET')))
+        obj = PriorityEntry(priority, (url, params, key, 'GET'))
+        await self.queue.put(obj)
         await event.wait()
 
         result = json.loads(self.requests[key]['result'])
@@ -132,7 +135,8 @@ class ApiRootMe():
         event = asyncio.Event()
         self.requests[key] = {}
         self.requests[key]['event'] = event
-        await self.queue.put((priority, (url, {}, key, 'HEAD')))
+        obj = PriorityEntry(priority, (url, {}, key, 'HEAD'))
+        await self.queue.put(obj)
         await event.wait()
 
         result = self.requests[key]['result']
