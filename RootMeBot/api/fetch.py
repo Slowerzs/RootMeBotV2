@@ -2,6 +2,7 @@ import asyncio
 import time
 import aiohttp
 import json
+from json.decoder import JSONDecodeError
 import functools
 import uuid
 from datetime import datetime, timedelta
@@ -122,8 +123,12 @@ class ApiRootMe():
         obj = PriorityEntry(priority, (url, params, key, 'GET'))
         await self.queue.put(obj)
         await event.wait()
+        try:
+            result = json.loads(self.requests[key]['result'])
+        except JSONDecodeError:
+            print(f"Got invalid response > {self.request[key]['result']}")
+            result = ''
 
-        result = json.loads(self.requests[key]['result'])
         del self.requests[key]
 
         return result
