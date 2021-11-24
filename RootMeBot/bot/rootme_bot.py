@@ -111,8 +111,8 @@ class RootMeBot():
         print("OK challs")
         while True:
             
-            await asyncio.sleep(3600 * 24)
             await self.database_manager.update_challenges()
+            await asyncio.sleep(600)
 
 
     async def cron_check_solves(self) -> None:

@@ -193,9 +193,12 @@ class DatabaseManager():
             full_auteur = await self.retreive_user(idx)
             full_auteur = session.merge(full_auteur)
 
-            #code.interact(local=locals())
+            challs_id = session.query(Challenge.idx).all()
 
             for validation in full_auteur.validation_aut:
+                if validation.challenge_id not in challs_id:
+                    await self.add_challenge_to_db(validation.challenge_id)
+
                 if validation.challenge_id not in [i.idx for i in old_auteur.solves]:
                     new_vals.append(validation)
 
