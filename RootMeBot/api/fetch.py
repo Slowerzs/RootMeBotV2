@@ -93,6 +93,11 @@ class ApiRootMe():
                         elif r.status == 401:
                             data = 'PREMIUM'
                             check = True
+
+                        # search for non existent username are now 404..
+                        elif r.status == 404:
+                            data = '404'
+                            check = True
                         else:
                             print(f'Status : {r.status} - restarting')
                             await asyncio.sleep(15)
@@ -177,6 +182,10 @@ class ApiRootMe():
             }
 
         users_data = await self.get(f"{api_base_url}{auteurs_path}", params, priority=0)
+
+        if users_data == 404:
+            return []
+        
         current_users = extract_auteurs_short(users_data)
 
         if len(current_users) == 50:

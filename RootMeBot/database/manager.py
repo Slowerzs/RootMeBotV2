@@ -79,7 +79,7 @@ class DatabaseManager():
 
         async def get_new_chall(idx: int):
             try:
-                full_chall = await self.rootme_api.get_challenge_by_id(idx)
+                full_chall = await self.rootme_api.get_challenge_by_id(idx, 1)
             except PremiumChallenge:
                 print(f"Could not retreive premium challenge {idx}")
                 return
