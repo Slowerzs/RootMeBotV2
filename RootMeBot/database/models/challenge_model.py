@@ -20,3 +20,20 @@ class Challenge(Base):
     def __str__(self) -> str:
         return f"Challenge {self.title}: {self.category} [{self.score}]"
 
+
+
+    def keys(self) -> list:
+        return ["idx", "title", "category", "description", "score", "difficulty", "date", "validation_number"]
+
+    def __getitem__(self, key) -> dict:
+        return {
+            "idx": self.idx,
+            "title": self.title,
+            "category": self.category,
+            "description": self.description,
+            "score": self.score,
+            "difficulty": self.difficulty,
+            "date": self.date,
+            "validation_number": self.validation_number
+            }.get(key)
+

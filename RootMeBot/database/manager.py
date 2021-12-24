@@ -34,7 +34,7 @@ class DatabaseManager():
         self.rootme_api = rootme_api
         self.notification_manager = notification_manager
 
-        self.engine = create_engine(f"sqlite://{database_path}")
+        self.engine = create_engine(f"sqlite://{database_path}", connect_args={'timeout': 15})
         Base.metadata.create_all(bind=self.engine)
        
         self.Session = sessionmaker(self.engine, expire_on_commit=False)
@@ -47,15 +47,12 @@ class DatabaseManager():
 
         return res
 
-    async def add_challenge_to_db(self, idx: int) -> Challenge:
+    async def add_challenge_to_db(self, idx: int, priority=1) -> Challenge:
         """Adds a Challenge to db from api"""
         try:
-            challenge = await self.rootme_api.get_challenge_by_id(idx)
+            challenge = await self.rootme_api.get_challenge_by_id(idx, priority)
         except PremiumChallenge:
             return None
-
-        with self.Session.begin() as session:
-            session.add(challenge)#probably need to consider that we already have it ?
 
         return challenge
 
@@ -184,6 +181,8 @@ class DatabaseManager():
 
         with self.Session.begin() as session: 
 
+            challs_id = [i[0] for i in session.query(Challenge.idx).all()]
+            
             old_auteur = await self.get_user_from_db(idx)
             old_auteur = session.merge(old_auteur)
 
@@ -193,11 +192,13 @@ class DatabaseManager():
             full_auteur = await self.retreive_user(idx)
             full_auteur = session.merge(full_auteur)
 
-            challs_id = session.query(Challenge.idx).all()
-
             for validation in full_auteur.validation_aut:
                 if validation.challenge_id not in challs_id:
-                    await self.add_challenge_to_db(validation.challenge_id)
+                    new_c = await self.add_challenge_to_db(validation.challenge_id, 0)
+                    if new_c:
+                        c = session.merge(validation.validation_challenge)
+                        session.delete(c)
+                        session.add(new_c)
 
                 if validation.challenge_id not in [i.idx for i in old_auteur.solves]:
                     new_vals.append(validation)

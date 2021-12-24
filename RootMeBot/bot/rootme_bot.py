@@ -37,13 +37,6 @@ class RootMeBot():
     
         self.init_done = False
 
-    async def banned(self):
-        await self.bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game(name="Banned 😞"))
-
-    async def unbanned(self):
-        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(name="😎"))
-
-
     async def after_init(self, func):
         return self.init_done
 
@@ -62,7 +55,6 @@ class RootMeBot():
     async def init_db(self) -> None:
         """Checks if the database seems populated or not (first run)"""
         await self.bot.wait_until_ready()
-        await self.unbanned()
         print("Starting...")
         channel = self.bot.get_channel(self.BOT_CHANNEL)
 
@@ -107,12 +99,13 @@ class RootMeBot():
 
         while not self.init_done:
             await asyncio.sleep(1)
-
-        print("OK challs")
+            
         while True:
             
             await self.database_manager.update_challenges()
-            await asyncio.sleep(600)
+            await asyncio.sleep(3600)
+        
+        print("OK challs")
 
 
     async def cron_check_solves(self) -> None:

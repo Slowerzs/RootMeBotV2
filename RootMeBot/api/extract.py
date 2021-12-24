@@ -51,6 +51,11 @@ def extract_auteurs_short(users_data: list) -> list[AuteurShort]:
 
 def extract_challenge(challenge_data: dict, idx) -> Challenge:
     """Parses data to create a Challenge"""
+    
+    #some challenges are list of 1 elements for some reason...
+    if type(challenge_data) == list:
+        challenge_data = challenge_data[0]
+
     titre = challenge_data['titre']
     category = challenge_data['rubrique']
     description = challenge_data['soustitre']

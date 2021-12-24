@@ -71,7 +71,7 @@ class ApiRootMe():
 
 
 
-                await asyncio.sleep(4.85)
+                await asyncio.sleep(4.5)
                 print(f"[{datetime.now().strftime('%H:%M:%S')}] Treating item in queue : {key} -> {url} + {params} - (Priority {prio})")
                 try:
                     async with method_http(url, params=params, cookies=cookies_rootme) as r:
@@ -215,7 +215,7 @@ class ApiRootMe():
         return current_challenges
         
     
-    async def get_challenge_by_id(self, idx: int) -> Challenge:
+    async def get_challenge_by_id(self, idx: int, priority: int) -> Challenge:
         """Retreives all information about a challenge by ID"""
 
         params = {
@@ -223,7 +223,7 @@ class ApiRootMe():
             'lang': DEFAULT_LANG
             }
         
-        challenge_data = await self.get(f"{api_base_url}{challenges_path}/{idx}", params) 
+        challenge_data = await self.get(f"{api_base_url}{challenges_path}/{idx}", params, priority) 
         challenge = extract_challenge(challenge_data, idx)
         return challenge
 
