@@ -16,10 +16,9 @@ class ChallengeData():
 		self.score = score
 		self.difficulty = difficulty
 		self.date = date
-		self.validations = validations
 
 	def keys(self) -> list:
-		return ["idx", "title", "category", "description", "score", "difficulty", "date", "validations"]
+		return ["idx", "title", "category", "description", "score", "difficulty", "date"]
 	
 	def __getitem__(self, key) -> dict:
 		return {
@@ -30,7 +29,6 @@ class ChallengeData():
 			"score": self.score,
 			"difficulty": self.difficulty,
 			"date": self.date,
-			"validations": self.validations
 			}[key]
 		
 

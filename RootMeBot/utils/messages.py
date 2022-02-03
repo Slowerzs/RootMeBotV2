@@ -69,7 +69,6 @@ async def send_new_solve(channel: TextChannel, chall: Challenge, aut: Auteur, ab
     message += f'\n • Category: {chall.category}'
     message += f'\n • Difficulty: {chall.difficulty}'
     message += f'\n • New score: {aut.score}'
-    message += f'\n • Validations: {chall.validation_number}'
     message += f'\n • Date: {val.date.strftime("%d/%m/%y %Hh%Mm%Ss")}'
 
     embed = discord.Embed(color=Color.NEW_YELLOW.value, title=message_title, description=message)

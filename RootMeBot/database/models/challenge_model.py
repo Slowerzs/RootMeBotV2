@@ -13,7 +13,6 @@ class Challenge(Base):
     score = Column(Integer)
     difficulty = Column(Text)
     date = Column(DateTime)
-    validation_number = Column(Integer)
 
     def __repr__(self) -> str:
         return f"Challenge {self.title}: {self.category} [{self.score}]"
@@ -23,7 +22,7 @@ class Challenge(Base):
 
 
     def keys(self) -> list:
-        return ["idx", "title", "category", "description", "score", "difficulty", "date", "validation_number"]
+        return ["idx", "title", "category", "description", "score", "difficulty", "date"]
 
     def __getitem__(self, key) -> dict:
         return {
@@ -34,6 +33,5 @@ class Challenge(Base):
             "score": self.score,
             "difficulty": self.difficulty,
             "date": self.date,
-            "validation_number": self.validation_number
             }.get(key)
 

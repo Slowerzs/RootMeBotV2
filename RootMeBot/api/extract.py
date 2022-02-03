@@ -62,16 +62,12 @@ def extract_challenge(challenge_data: dict, idx) -> Challenge:
     score = int(challenge_data['score'])
     difficulty = challenge_data['difficulte']
     date = challenge_data['date_publication']
-    try:
-        validation_number = int(challenge_data['validations'])
-    except KeyError:
-        #Challenges with 0 solves don't have a validations field
-        validation_number = 0
+
 
     format_date = "%Y-%m-%d %H:%M:%S"
 
     date_time = datetime.strptime(date, format_date) 
-    challenge = Challenge(idx=idx, title=titre, category=category, description=description, score=score, difficulty=difficulty, date=date_time, validation_number=validation_number)
+    challenge = Challenge(idx=idx, title=titre, category=category, description=description, score=score, difficulty=difficulty, date=date_time)
     
 
     return challenge
