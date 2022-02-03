@@ -145,7 +145,7 @@ class RootMeBot():
                 idx = int(args)
 
                 username = await self.database_manager.remove_user_from_db(idx)  
-                if aut:
+                if username:
                     await utils.removed_ok(context.message.channel, username)
                 else:
                     #Case where username is full numbers
@@ -260,7 +260,7 @@ class RootMeBot():
             
             if len(args) < 1:
                 await utils.usage(context.message.channel)
-                breturn
+                return
 
             lang = args[0].lower()
 
