@@ -1,5 +1,5 @@
 import discord
-from discord.channel import TextChannel
+from discord.abc import MessageableChannel
 from discord.utils import escape_markdown
 
 import asyncio
@@ -78,7 +78,7 @@ class DropdownScoreboard(discord.ui.Select):
         await self.view.show_scoreboard(self.values[0])
 
 class ScoreboardView(discord.ui.View):
-    def __init__(self, channel: TextChannel, db_manager: DatabaseManager):
+    def __init__(self, channel: MessageableChannel, db_manager: DatabaseManager):
         super().__init__()
         self.database_manager = db_manager
         self.channel = channel
@@ -104,7 +104,7 @@ class MultipleChallButton(discord.ui.Select):
         await self.view.show_challenge(self.values[0])
 
 class MultipleChallFoundView(discord.ui.View):
-    def __init__(self, channel: TextChannel, challenges: list[Challenge], Session):
+    def __init__(self, channel: MessageableChannel, challenges: list[Challenge], Session):
         super().__init__()
         self.Session = Session
         self.channel = channel
@@ -129,7 +129,7 @@ class MultipleUserButton(discord.ui.Select):
         await self.view.add_user(self.values[0])
 
 class MultipleUserFoundView(discord.ui.View):
-    def __init__(self, channel: TextChannel, db_manager: DatabaseManager, users: list[Auteur]):
+    def __init__(self, channel: MessageableChannel, db_manager: DatabaseManager, users: list[Auteur]):
         super().__init__()
         self.channel = channel
         self.database_manager = db_manager

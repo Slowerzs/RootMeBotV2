@@ -195,7 +195,7 @@ class ApiRootMe():
         return current_users
 
     
-    async def fetch_all_challenges(self, start=0) -> ChallengeShort:
+    async def fetch_all_challenges(self, start=0) -> list[ChallengeShort]:
         """Retrieves all challenges given a starting number"""
 
         params = {
@@ -252,5 +252,3 @@ class ApiRootMe():
 
         if code == '200':
             return url
-
-

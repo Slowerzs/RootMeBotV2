@@ -1,46 +1,39 @@
-import discord
+"""Module for the discord bot"""
 import asyncio
-import functools
-import traceback
-import time
 
+import discord
+import utils.messages as utils
+from classes.error import *
+from constants import BOT_PREFIX
 from database.manager import DatabaseManager
-from database.models.challenge_model import Challenge
-from database.models.auteur_model import Auteur
-
-from notify.manager import NotificationManager
-
+from discord import Embed
 from discord.ext import commands
 from discord.ext.commands.context import Context
-from discord import Embed
-
-from classes.error import *
-from classes.challenge import ChallengeData
-from classes.auteur import AuteurData
-
-from constants import BOT_PREFIX, LOG_PATH
-
-import utils.messages as utils
-
+from notify.manager import NotificationManager
 
 
 class RootMeBot():
+    """Main class for the discord bot"""
 
     def __init__(self, database_manager: DatabaseManager, notification_manager: NotificationManager, *args, **kwargs) -> None:
+
 
         self.intents = discord.Intents.default()
         self.description = """A discord bot to keep up with your progression on www.root-me.org"""
         self.bot = commands.Bot(command_prefix=BOT_PREFIX, description=self.description, intents=self.intents)
-        
+
         self.notification_manager = notification_manager
         self.database_manager = database_manager
-    
+
         self.init_done = False
 
+
     async def after_init(self, func):
+        """Ensures that the init is done"""
         return self.init_done
 
     def check_channel(self):
+        """Ensures that the message is in the correct channel"""
         async def predicate(context):
             if context.message.channel.id == self.BOT_CHANNEL:
                 return True
@@ -77,7 +70,7 @@ class RootMeBot():
 
         while not self.init_done:
             await asyncio.sleep(1)
-        
+
         channel = self.bot.get_channel(self.BOT_CHANNEL)
 
         while True:
@@ -85,7 +78,7 @@ class RootMeBot():
             for aut, chall, score_above, is_blood in self.notification_manager.get_solve_queue():
                 if chall:
                     await utils.send_new_solve(channel, chall, aut, score_above, is_blood)
-                    
+
 
             for chall in self.notification_manager.get_chall_queue():
                 await utils.send_new_challenge(channel, chall)
@@ -94,17 +87,17 @@ class RootMeBot():
 
     async def cron_check_challs(self) -> None:
         """Checks for new challs"""
-        
+
         await self.bot.wait_until_ready()
 
         while not self.init_done:
             await asyncio.sleep(1)
-            
-        while True:
-            
-            await self.database_manager.update_challenges()
-            await asyncio.sleep(3600)
-        
+
+        #while True:
+
+            #await self.database_manager.update_challenges()
+            #await asyncio.sleep(3600)
+
         print("OK challs")
 
 
@@ -114,14 +107,14 @@ class RootMeBot():
 
         while not self.init_done:
             await asyncio.sleep(1)
-        
+
         print("OK solves")
 
         while True:
-
             await self.database_manager.update_users()
 
     def catch(self):
+        """Catch discord event"""
         @self.bot.event
         async def on_ready():
                     for server in self.bot.guilds:
@@ -144,7 +137,7 @@ class RootMeBot():
             try:
                 idx = int(args)
 
-                username = await self.database_manager.remove_user_from_db(idx)  
+                username = await self.database_manager.remove_user_from_db(idx)
                 if aut:
                     await utils.removed_ok(context.message.channel, username)
                 else:
@@ -160,14 +153,14 @@ class RootMeBot():
                     await utils.cant_find_user(context.message.channel, args)
                 else:
                     await utils.removed_ok(context.message.channel, args)
-    
+
 
         @self.bot.command(description='Show scoreboard')
         @commands.check(self.after_init)
         @self.check_channel()
         async def scoreboard(context: Context) -> None:
             """ """
-            
+
             args = self.get_command_args(context)
             if len(args) < 1:
                 await utils.scoreboard_choice(context.message.channel, self.database_manager)
@@ -225,7 +218,7 @@ class RootMeBot():
             """<scoreboard name>"""
 
             args = ' '.join(self.get_command_args(context))
-            
+
             scoreboard = await self.database_manager.get_scoreboard(args)
             if not scoreboard:
                 scoreboard = await self.database_manager.create_scoreboard(args)
@@ -240,7 +233,7 @@ class RootMeBot():
             """<scoreboard name>"""
 
             args = ' '.join(self.get_command_args(context))
-            
+
             res = await self.database_manager.remove_scoreboard(args)
             if not res:
                await utils.cant_find_scoreboard(context.message.channel, args)
@@ -257,10 +250,10 @@ class RootMeBot():
         async def user_lang(context: Context) -> None:
             """<lang>"""
             args = self.get_command_args(context)
-            
+
             if len(args) < 1:
                 await utils.usage(context.message.channel)
-                breturn
+                return
 
             lang = args[0].lower()
 
@@ -270,7 +263,7 @@ class RootMeBot():
                 #Send OK message
                 if lang == "en":
                     lang = "gb"
-                
+
                 await utils.lang(context.message.channel, lang)
                 return
             else:
@@ -283,13 +276,13 @@ class RootMeBot():
         @self.check_channel()
         async def search_user(context: Context) -> None:
             """<username>"""
-            
+
             args = self.get_command_args(context)
             if len(args) < 1:
                 await utils.usage(context.message.channel)
                 return
             search = str(' '.join(args))
-            
+
             auteurs = await self.database_manager.search_user(search)
             print(auteurs)
 
@@ -298,7 +291,7 @@ class RootMeBot():
             else:
                 await utils.cant_find_user(context.message.channel, search)
 
-            
+
         @self.bot.command(description='Shows stats of a user')
         @commands.check(self.after_init)
         @self.check_channel()
@@ -330,10 +323,10 @@ class RootMeBot():
                     return
                 else:
                     auteur = auteurs[0]
-            
+
 
             image_profile = await self.database_manager.rootme_api.get_image_png(auteur.idx)
-            
+
             if not image_profile:
                 image_profile = await self.database_manager.rootme_api.get_image_jpg(auteur.idx)
             if not image_profile:
@@ -358,7 +351,7 @@ class RootMeBot():
                 return
 
             search = str(' '.join(args))
-            
+
             try:
                 search_id = int(search)
                 auteur = await self.database_manager.get_user_from_db(search_id)
@@ -377,11 +370,11 @@ class RootMeBot():
                     return
                 else:
                     auteur = auteurs[0]
-            
+
 
 
                 await utils.manage_user(context.message.channel, self.database_manager, auteur)
-            
+
 
 
 
@@ -401,10 +394,10 @@ class RootMeBot():
                 #Search by id
                 search_id = int(search)
 
-                chall = await self.database_manager.get_challenge_from_db(search_id)                
-                
+                chall = await self.database_manager.get_challenge_from_db(search_id)
+
                 if chall:
-                    await utils.who_solved(context.message.channel, chall, self.database_manager.Session)
+                    await utils.who_solved(context.message.channel, chall, self.database_manager.session_maker)
                 else:
                     await utils.cant_find_challenge(context.message.channel, search)
 
@@ -415,18 +408,18 @@ class RootMeBot():
                     await utils.many_challenges(context.message.channel, results)
 
                 elif len(results) > 1:
-                    await utils.multiple_challenges(context.message.channel, results, self.database_manager.Session)
-                
+                    await utils.multiple_challenges(context.message.channel, results, self.database_manager.session_maker)
+
                 elif len(results) == 1:
                     chall = results[0]
-                    await utils.who_solved(context.message.channel, chall, self.database_manager.Session)
+                    await utils.who_solved(context.message.channel, chall, self.database_manager.session_maker)
 
                 else:
                     await utils.cant_find_challenge(context.message.channel, search)
 
     def start(self, TOKEN, BOT_CHANNEL):
         """Starts the bot"""
-        
+
         self.BOT_CHANNEL = BOT_CHANNEL
         print("START")
         self.catch()
@@ -434,7 +427,7 @@ class RootMeBot():
         self.database_manager.loop = self.bot.loop
 
         self.bot.loop.create_task(self.init_db())
-        
+
         self.worker = self.bot.loop.create_task(self.database_manager.rootme_api.worker())
         self.check_solves = self.bot.loop.create_task(self.cron_check_solves())
         self.check_challs = self.bot.loop.create_task(self.cron_check_challs())
@@ -443,11 +436,3 @@ class RootMeBot():
 
 
         self.bot.run(TOKEN)
-
-
-
-
-
-
-
-        

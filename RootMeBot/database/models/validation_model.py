@@ -1,13 +1,15 @@
-from sqlalchemy import Table, Column, Integer, ForeignKey, Text, DateTime
-from sqlalchemy.orm import relationship, backref
-from sqlalchemy.ext.associationproxy import association_proxy
-
-from database.models.base_model import *
+"""Module for the Validation class"""
 from database.models.auteur_model import Auteur
+from database.models.base_model import Base
 from database.models.challenge_model import Challenge
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Text
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.orm import relationship
 
 
 class Validation(Base):
+    """Class that represents the link between users and challenges"""
+
     __tablename__ = 'validations'
     idx = Column(Text, primary_key=True)
     auteur_id = Column(Integer, ForeignKey('auteurs.idx'), nullable=False)
@@ -23,4 +25,3 @@ class Validation(Base):
 
 Challenge.solvers = association_proxy("validation_chall", "validation_auteur")
 Auteur.solves = association_proxy("validation_aut", "validation_challenge")
-

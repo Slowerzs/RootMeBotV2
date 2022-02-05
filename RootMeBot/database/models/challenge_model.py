@@ -1,9 +1,10 @@
-from sqlalchemy import Table, Column, Integer, ForeignKey, Text, DateTime
-from sqlalchemy.orm import relationship, backref
+"""Module for the challenge class"""
+from database.models.base_model import Base
+from sqlalchemy import Column, DateTime, Integer, Text
 
-from database.models.base_model import *
 
 class Challenge(Base):
+    """Class that represents each challenge on the platform"""
 
     __tablename__ = 'challenges'
     idx = Column(Integer, primary_key=True)
@@ -13,7 +14,6 @@ class Challenge(Base):
     score = Column(Integer)
     difficulty = Column(Text)
     date = Column(DateTime)
-    validation_number = Column(Integer)
 
     def __repr__(self) -> str:
         return f"Challenge {self.title}: {self.category} [{self.score}]"
@@ -23,10 +23,11 @@ class Challenge(Base):
 
 
     def keys(self) -> list:
-        return ["idx", "title", "category", "description", "score", "difficulty", "date", "validation_number"]
+        """Lists keys"""
+        return ["idx", "title", "category", "description", "score", "difficulty", "date"]
 
     def __getitem__(self, key) -> dict:
-        return {
+        item = {
             "idx": self.idx,
             "title": self.title,
             "category": self.category,
@@ -34,6 +35,8 @@ class Challenge(Base):
             "score": self.score,
             "difficulty": self.difficulty,
             "date": self.date,
-            "validation_number": self.validation_number
             }.get(key)
 
+        assert item is not None, "Error unknown Key"
+
+        return item
