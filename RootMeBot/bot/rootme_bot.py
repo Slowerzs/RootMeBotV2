@@ -137,8 +137,8 @@ class RootMeBot():
             try:
                 idx = int(args)
 
-                username = await self.database_manager.remove_user_from_db(idx)
-                if aut:
+                username = await self.database_manager.remove_user_from_db(idx)  
+                if username:
                     await utils.removed_ok(context.message.channel, username)
                 else:
                     #Case where username is full numbers
