@@ -23,10 +23,6 @@ class Challenge(Base):
 
 
     def keys(self) -> list:
-<<<<<<< HEAD
-        """Lists keys"""
-=======
->>>>>>> refs/remotes/origin/main
         return ["idx", "title", "category", "description", "score", "difficulty", "date"]
 
     def __getitem__(self, key) -> dict:
