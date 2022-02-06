@@ -4,7 +4,7 @@ import code
 from html import unescape
 
 from discord.utils import escape_markdown
-from discord.abc import MessageableChannel
+from discord.channel import TextChannel
 
 from database.manager import DatabaseManager
 
@@ -21,7 +21,7 @@ import utils.messages as utils
 Auteurs = list[Auteur]
 Challenges = list[Challenge]
 
-async def init_start(channel: MessageableChannel) -> None:
+async def init_start(channel: TextChannel) -> None:
     """First time running message"""
 
     message_title = f"Welcome ! :smile:"
@@ -31,7 +31,7 @@ async def init_start(channel: MessageableChannel) -> None:
     embed = discord.Embed(color=Color.INFO_BLUE.value, title=message_title, description=message)
     await channel.send(embed=embed)
 
-async def incorrect_usage(channel: MessageableChannel) -> None:
+async def incorrect_usage(channel: TextChannel) -> None:
 
     message_title = 'Error :frowning:'
     message = f'See !help'
@@ -39,7 +39,7 @@ async def incorrect_usage(channel: MessageableChannel) -> None:
     await channel.send(embed=embed)
 
 
-async def init_end(channel: MessageableChannel) -> None:
+async def init_end(channel: TextChannel) -> None:
     """Initialization complete"""
 
     message_title = f'All done !'
@@ -51,7 +51,7 @@ async def init_end(channel: MessageableChannel) -> None:
 
 
 
-async def send_new_solve(channel: MessageableChannel, chall: Challenge, aut: Auteur, above: tuple[str, int], is_blood: bool) -> None:
+async def send_new_solve(channel: TextChannel, chall: Challenge, aut: Auteur, above: tuple[str, int], is_blood: bool) -> None:
     """Posts a new solve in the right channel"""
 
     if is_blood:
@@ -69,7 +69,6 @@ async def send_new_solve(channel: MessageableChannel, chall: Challenge, aut: Aut
     message += f'\n • Category: {chall.category}'
     message += f'\n • Difficulty: {chall.difficulty}'
     message += f'\n • New score: {aut.score}'
-    message += f'\n • Validations: {chall.validation_number}'
     message += f'\n • Date: {val.date.strftime("%d/%m/%y %Hh%Mm%Ss")}'
 
     embed = discord.Embed(color=Color.NEW_YELLOW.value, title=message_title, description=message)
@@ -81,7 +80,7 @@ async def send_new_solve(channel: MessageableChannel, chall: Challenge, aut: Aut
     await channel.send(embed=embed)
 
 
-async def send_new_challenge(channel: MessageableChannel, chall: Challenge) -> None:
+async def send_new_challenge(channel: TextChannel, chall: Challenge) -> None:
     """Posts a new challenge in the right channel"""
 
     ping = f'<@&{PING_ROLE_ROOTME}>'
@@ -95,12 +94,12 @@ async def send_new_challenge(channel: MessageableChannel, chall: Challenge) -> N
     await channel.send(ping, embed=embed)
 
 
-async def scoreboard_choice(channel: MessageableChannel, db_manager: DatabaseManager) -> None:
+async def scoreboard_choice(channel: TextChannel, db_manager: DatabaseManager) -> None:
     view = ScoreboardView(channel, db_manager)
     await channel.send('Choose which scoreboard: ', view=view)
 
 
-async def scoreboard(channel: MessageableChannel, database_manager: DatabaseManager, name: str) -> None:
+async def scoreboard(channel: TextChannel, database_manager: DatabaseManager, name: str) -> None:
 
     sc = await database_manager.get_scoreboard(name)
     if not sc:
@@ -124,7 +123,7 @@ async def scoreboard(channel: MessageableChannel, database_manager: DatabaseMana
     await channel.send(embed=embed)
 
 
-async def added_ok(channel: MessageableChannel, username: str) -> None:
+async def added_ok(channel: TextChannel, username: str) -> None:
 
     message_title = 'Success'
     message = f'{escape_markdown(username)} was successfully added :+1:'
@@ -132,7 +131,7 @@ async def added_ok(channel: MessageableChannel, username: str) -> None:
     embed = discord.Embed(color=Color.SUCCESS_GREEN.value, title=message_title, description=message)
     await channel.send(embed=embed)
 
-async def cant_find_user(channel: MessageableChannel, data: str) -> None:
+async def cant_find_user(channel: TextChannel, data: str) -> None:
 
     message_title = 'Error'
     message = f'Cant find user {escape_markdown(data)} :frowning:'
@@ -141,7 +140,7 @@ async def cant_find_user(channel: MessageableChannel, data: str) -> None:
 
     await channel.send(embed=embed)
 
-async def cant_find_challenge(channel: MessageableChannel, data: str) -> None:
+async def cant_find_challenge(channel: TextChannel, data: str) -> None:
 
     message_title = 'Error'
     message = f'Cant find challenge {escape_markdown(data)} :frowning:'
@@ -150,7 +149,7 @@ async def cant_find_challenge(channel: MessageableChannel, data: str) -> None:
 
     await channel.send(embed=embed)
 
-async def cant_find_scoreboard(channel: MessageableChannel, data: str) -> None:
+async def cant_find_scoreboard(channel: TextChannel, data: str) -> None:
 
     message_title = 'Error'
     message = f'Cant find scoreboard {escape_markdown(data)} :frowning:'
@@ -161,7 +160,7 @@ async def cant_find_scoreboard(channel: MessageableChannel, data: str) -> None:
 
 
 
-async def removed_ok(channel: MessageableChannel, username: str) -> None:
+async def removed_ok(channel: TextChannel, username: str) -> None:
 
     message_title = 'Success'
     message = f'{escape_markdown(username)} was succesfully removed :wave:'
@@ -170,7 +169,7 @@ async def removed_ok(channel: MessageableChannel, username: str) -> None:
     await channel.send(embed=embed)
 
 
-async def possible_users(channel: MessageableChannel, db_manager: DatabaseManager, auteurs: Auteurs) -> None:
+async def possible_users(channel: TextChannel, db_manager: DatabaseManager, auteurs: Auteurs) -> None:
 
     message = f'Multiple users found :'
 
@@ -178,7 +177,7 @@ async def possible_users(channel: MessageableChannel, db_manager: DatabaseManage
 
     await channel.send(message, view=view)
 
-async def many_users(channel: MessageableChannel, auteurs: Auteurs) -> None:
+async def many_users(channel: TextChannel, auteurs: Auteurs) -> None:
 
     message_title = 'Possibles users'
 
@@ -190,7 +189,7 @@ async def many_users(channel: MessageableChannel, auteurs: Auteurs) -> None:
     await channel.send(embed=embed)
 
 
-async def who_solved(channel: MessageableChannel, chall: Challenge, Session) -> None:
+async def who_solved(channel: TextChannel, chall: Challenge, Session) -> None:
 
     message_title = f'Solvers of {unescape(chall.title)} :sunglasses:'
     message = ''
@@ -205,7 +204,7 @@ async def who_solved(channel: MessageableChannel, chall: Challenge, Session) -> 
     await channel.send(embed=embed)
 
 
-async def many_challenges(channel: MessageableChannel, challenges: Challenges) -> None:
+async def many_challenges(channel: TextChannel, challenges: Challenges) -> None:
 
     message_title = f'Multiple challenges found :thinking:'
 
@@ -222,7 +221,7 @@ async def many_challenges(channel: MessageableChannel, challenges: Challenges) -
 
     await channel.send(embed=embed)
 
-async def multiple_challenges(channel: MessageableChannel, challenges: Challenges, Session) -> None:
+async def multiple_challenges(channel: TextChannel, challenges: Challenges, Session) -> None:
 
     message = f'Multiple challenges found :'
 
@@ -232,7 +231,7 @@ async def multiple_challenges(channel: MessageableChannel, challenges: Challenge
 
 
 
-async def multiple_users(channel: MessageableChannel, auteurs: Auteurs) -> None:
+async def multiple_users(channel: TextChannel, auteurs: Auteurs) -> None:
     message_title = f'Multiple users match :thinking:'
     first_column = ''
     second_column = ''
@@ -251,7 +250,7 @@ async def multiple_users(channel: MessageableChannel, auteurs: Auteurs) -> None:
     await channel.send(embed=embed)
 
 
-async def profile(channel: MessageableChannel, data: tuple[str, int, int], solves: dict, stats_glob: list[int], image_url: str) -> None:
+async def profile(channel: TextChannel, data: tuple[str, int, int], solves: dict, stats_glob: list[int], image_url: str) -> None:
 
     username, score, rank = data
 
@@ -294,7 +293,7 @@ async def profile(channel: MessageableChannel, data: tuple[str, int, int], solve
 
 
 
-async def usage(channel: MessageableChannel) -> None:
+async def usage(channel: TextChannel) -> None:
 
 
     message_title = f'Error'
@@ -303,27 +302,27 @@ async def usage(channel: MessageableChannel) -> None:
     embed = discord.Embed(color=Color.ERROR_RED.value, title=message_title, description=message)
     await channel.send(embed=embed)
 
-async def lang(channel: MessageableChannel, lang: str) -> None:
+async def lang(channel: TextChannel, lang: str) -> None:
 
     message_title = f"Lang changed"
     message = f'The lang for the next search has been updated ! :flag_{lang}:'
     embed = discord.Embed(color=Color.SUCCESS_GREEN.value, title=message_title, description=message)
     await channel.send(embed=embed)
 
-async def unknown_lang(channel: MessageableChannel, lang: str) -> None:
+async def unknown_lang(channel: TextChannel, lang: str) -> None:
     message_title = f"Unknown lang"
     message = f'Can\'t find lang {escape_markdown(lang)}. Available languages are : "en", "fr", "de", "es", "ru"'
     embed = discord.Embed(color=Color.ERROR_RED.value, title=message_title, description=message)
     await channel.send(embed=embed)
 
 
-async def add_scoreboard(channel: MessageableChannel, sc: Scoreboard) -> None:
+async def add_scoreboard(channel: TextChannel, sc: Scoreboard) -> None:
     message_title = f"Scoreboard Created"
     message = f'Scoreboard {escape_markdown(sc.name)} was successfully created :+1:'
     embed = discord.Embed(color=Color.SUCCESS_GREEN.value, title=message_title, description=message)
     await channel.send(embed=embed)
 
-async def manage_user(channel: MessageableChannel, db_manager: DatabaseManager, auteur: Auteur) -> None:
+async def manage_user(channel: TextChannel, db_manager: DatabaseManager, auteur: Auteur) -> None:
     message_title = 'Edit user'
     message = f'Choose the scoreboards {escape_markdown(auteur.username)} is part of'
     view = ManageView(db_manager, auteur)

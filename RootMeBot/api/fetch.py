@@ -35,7 +35,7 @@ class PriorityEntry(object):
 
 
 class ApiRootMe():
-
+    """Class that represents the API"""
     def __init__(self):
         self.bot = None
         self.semaphore = asyncio.BoundedSemaphore(24)
@@ -52,9 +52,9 @@ class ApiRootMe():
     async def worker(self):
         print(f"Starting worker...")
         while True:
-            
+
             check = False
-            
+
             data = await self.queue.get()
 
             prio, req = data.priority, data.data
@@ -131,7 +131,7 @@ class ApiRootMe():
         try:
             result = json.loads(self.requests[key]['result'])
         except JSONDecodeError:
-            print(f"Got invalid response > {self.request[key]['result']}")
+            print(f"Got invalid response > {self.requests[key]['result']}")
             result = ''
 
         del self.requests[key]
@@ -161,7 +161,7 @@ class ApiRootMe():
 
     async def get_user_by_id(self, idx: int, priority=1) -> Auteur:
         """Retreives an Auteur by id"""
-       
+
         params = {
             str(int(time.time())): str(int(time.time())),
             }
@@ -185,7 +185,7 @@ class ApiRootMe():
 
         if users_data == 404:
             return []
-        
+
         current_users = extract_auteurs_short(users_data)
 
         if len(current_users) == 50:
@@ -194,7 +194,7 @@ class ApiRootMe():
         self.lang = DEFAULT_LANG
         return current_users
 
-    
+
     async def fetch_all_challenges(self, start=0) -> list[ChallengeShort]:
         """Retrieves all challenges given a starting number"""
 
@@ -203,12 +203,12 @@ class ApiRootMe():
             'debut_challenges': str(start),
             'lang': DEFAULT_LANG
             }
-    
+
         current_challenges = []
-        
+
         if not start:
             print("Fetching all challenges...")
-        
+
         challenges_data = await self.get(f"{api_base_url}{challenges_path}/", params)
 
 
@@ -220,10 +220,10 @@ class ApiRootMe():
             return current_challenges + await self.fetch_all_challenges(start=start + (50 - (start % 50)))
         else:
             return current_challenges
-        
+
         return current_challenges
-        
-    
+
+
     async def get_challenge_by_id(self, idx: int, priority: int) -> Challenge:
         """Retreives all information about a challenge by ID"""
 
@@ -231,8 +231,8 @@ class ApiRootMe():
             str(int(time.time())): str(int(time.time())),
             'lang': DEFAULT_LANG
             }
-        
-        challenge_data = await self.get(f"{api_base_url}{challenges_path}/{idx}", params, priority) 
+
+        challenge_data = await self.get(f"{api_base_url}{challenges_path}/{idx}", params, priority)
         challenge = extract_challenge(challenge_data, idx)
         return challenge
 

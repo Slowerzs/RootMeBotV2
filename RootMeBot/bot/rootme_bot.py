@@ -53,7 +53,7 @@ class RootMeBot():
 
         await self.database_manager.create_scoreboard('global')
 
-        if self.database_manager.count_challenges() < 300:
+        if self.database_manager.count_challenges() < 500:
 
             await utils.init_start(channel)
             await self.database_manager.update_challenges(init=True)

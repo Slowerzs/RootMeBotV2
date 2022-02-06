@@ -1,5 +1,6 @@
+"""All views for discord messages"""
 import discord
-from discord.abc import MessageableChannel
+from discord.channel import TextChannel
 from discord.utils import escape_markdown
 
 import asyncio
@@ -16,6 +17,7 @@ import utils.messages as utils
 
 
 class ManageButton(discord.ui.Button):
+    """Button to choose which scoreboard"""
     def __init__(self, sc: Scoreboard, y: int, status: bool):
         self.sc = sc
         
@@ -45,7 +47,7 @@ class ManageButton(discord.ui.Button):
 
 
 class ManageView(discord.ui.View):
-
+    """View to manage scoreboards"""
     def __init__(self, db_manager: DatabaseManager, auteur: Auteur):
         super().__init__()
         self.database_manager = db_manager
@@ -66,6 +68,7 @@ class ManageView(discord.ui.View):
 
 
 class DropdownScoreboard(discord.ui.Select):
+    """Dropdown to chosse which scoreboard"""
     def __init__(self, scoreboards: list[Scoreboard]):
 
         options = [
@@ -78,7 +81,7 @@ class DropdownScoreboard(discord.ui.Select):
         await self.view.show_scoreboard(self.values[0])
 
 class ScoreboardView(discord.ui.View):
-    def __init__(self, channel: MessageableChannel, db_manager: DatabaseManager):
+    def __init__(self, channel: TextChannel, db_manager: DatabaseManager):
         super().__init__()
         self.database_manager = db_manager
         self.channel = channel
@@ -104,7 +107,7 @@ class MultipleChallButton(discord.ui.Select):
         await self.view.show_challenge(self.values[0])
 
 class MultipleChallFoundView(discord.ui.View):
-    def __init__(self, channel: MessageableChannel, challenges: list[Challenge], Session):
+    def __init__(self, channel: TextChannel, challenges: list[Challenge], Session):
         super().__init__()
         self.Session = Session
         self.channel = channel
@@ -129,7 +132,7 @@ class MultipleUserButton(discord.ui.Select):
         await self.view.add_user(self.values[0])
 
 class MultipleUserFoundView(discord.ui.View):
-    def __init__(self, channel: MessageableChannel, db_manager: DatabaseManager, users: list[Auteur]):
+    def __init__(self, channel: TextChannel, db_manager: DatabaseManager, users: list[Auteur]):
         super().__init__()
         self.channel = channel
         self.database_manager = db_manager

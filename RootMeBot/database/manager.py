@@ -1,5 +1,6 @@
 """Module for the DatabaseManager"""
 import asyncio
+import code
 
 from api.fetch import ApiRootMe
 from classes.auteur import AuteurData
@@ -172,24 +173,22 @@ class DatabaseManager():
         with self.session_maker.begin() as session:  # type: ignore
 
             challs_id = [i[0] for i in session.query(Challenge.idx).all()]
-
             old_auteur = await self.get_user_from_db(idx)
-            old_auteur = session.merge(old_auteur)
-
+            old_id = [i.idx for i in session.merge(old_auteur).solves]
             make_transient(old_auteur)
 
             full_auteur = await self.retreive_user(idx)
             full_auteur = session.merge(full_auteur)
 
             for validation in full_auteur.validation_aut:
-                if validation.challenge_id not in challs_id:
-                    new_c = await self.add_challenge_to_db(validation.challenge_id, 0)
+                if validation.validation_challenge.idx not in challs_id:
+                    new_c = await self.add_challenge_to_db(validation.validation_challenge.idx, 0)
                     if new_c:
                         chall = session.merge(validation.validation_challenge)
                         session.delete(chall)
                         session.add(new_c)
 
-                if validation.challenge_id not in [i.idx for i in old_auteur.solves]:
+                if validation.validation_challenge.idx not in old_id:
                     new_vals.append(validation)
 
             for val in new_vals:
@@ -258,7 +257,6 @@ class DatabaseManager():
 
         with self.session_maker.begin() as session: # type: ignore
             res = session.query(Challenge.category, func.count(Challenge.idx)).group_by(Challenge.category).all()
-            #print(res)
             stats = {
                 Stats.APP_SCRIPT: next(x[1] for x in res if x[0] == 'App - Script'),
                 Stats.APP_SYSTEM: next(x[1] for x in res if x[0] == 'App - Système'),
