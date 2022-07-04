@@ -417,7 +417,7 @@ class RootMeBot():
                 else:
                     await utils.cant_find_challenge(context.message.channel, search)
 
-    def start(self, TOKEN, BOT_CHANNEL):
+    async def start(self, TOKEN, BOT_CHANNEL):
         """Starts the bot"""
 
         self.BOT_CHANNEL = BOT_CHANNEL
@@ -426,13 +426,15 @@ class RootMeBot():
 
         self.database_manager.loop = self.bot.loop
 
-        self.bot.loop.create_task(self.init_db())
+        async with self.bot:
 
-        self.worker = self.bot.loop.create_task(self.database_manager.rootme_api.worker())
-        self.check_solves = self.bot.loop.create_task(self.cron_check_solves())
-        self.check_challs = self.bot.loop.create_task(self.cron_check_challs())
+            self.bot.loop.create_task(self.init_db())
 
-        self.bot.loop.create_task(self.cron_display())
+            self.worker = self.bot.loop.create_task(self.database_manager.rootme_api.worker())
+            self.check_solves = self.bot.loop.create_task(self.cron_check_solves())
+            self.check_challs = self.bot.loop.create_task(self.cron_check_challs())
 
+            self.bot.loop.create_task(self.cron_display())
 
-        self.bot.run(TOKEN)
+            
+            await self.bot.start(TOKEN)

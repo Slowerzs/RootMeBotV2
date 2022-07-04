@@ -16,22 +16,23 @@ TOKEN = getenv('DISCORD_TOKEN')
 GUILD = getenv('DISCORD_GUILD')
 CHANNEL = int(getenv('BOT_CHANNEL'))
 
-client = discord.Client()
+intents = discord.Intents.default()
+intents.message_content = True
+client = discord.Client(intents=intents)
 
 
-def main(bot):
-    
-
-    bot.start(TOKEN, CHANNEL)
-
-
-if __name__ == "__main__":
-    rootme_api = ApiRootMe()
+async def main():
+    rootme_api = ApiRootMe( )
     notification_manager = NotificationManager()
     db_manager = DatabaseManager(rootme_api, notification_manager)
     bot = RootMeBot(db_manager, notification_manager)
     rootme_api.bot = bot
-    main(bot)
+    await bot.start(TOKEN, CHANNEL)
+    
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
 
 
 
