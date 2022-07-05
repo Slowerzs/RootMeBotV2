@@ -18,7 +18,7 @@ class RootMeBot():
     def __init__(self, database_manager: DatabaseManager, notification_manager: NotificationManager, *args, **kwargs) -> None:
 
 
-        self.intents = discord.Intents.default()
+        self.intents = discord.Intents.all()
         self.description = """A discord bot to keep up with your progression on www.root-me.org"""
         self.bot = commands.Bot(command_prefix=BOT_PREFIX, description=self.description, intents=self.intents)
 
@@ -52,8 +52,8 @@ class RootMeBot():
         channel = self.bot.get_channel(self.BOT_CHANNEL)
 
         await self.database_manager.create_scoreboard('global')
-
-        if self.database_manager.count_challenges() < 500:
+        print('Nombre chall',self.database_manager.count_challenges())
+        if self.database_manager.count_challenges() < 450:
 
             await utils.init_start(channel)
             await self.database_manager.update_challenges(init=True)
@@ -119,7 +119,6 @@ class RootMeBot():
         async def on_ready():
                     for server in self.bot.guilds:
                         print(f'RootMeBot is starting on the following server: "{server.name}" !')
-
 
 
         @self.bot.command(description='Remove user by ID', pass_context=True)
